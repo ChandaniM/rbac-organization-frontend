@@ -7,6 +7,13 @@ const router = createBrowserRouter([
         return { Component: Dashboard };
       },
   },
+  {
+    path : "auth/login",
+    lazy : async ()=>{
+        const AuthPage  = (await import("./pages/auth")).default;
+        return {Component : AuthPage }
+    }
+  }
 ]);
 
 export default router;
