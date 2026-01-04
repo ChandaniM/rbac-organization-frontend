@@ -3,12 +3,10 @@ import image from "../assets/login.png";
 const AuthPageLayout = () => {
   return (
     <div className="flex min-h-screen">
-      {/* Left Image Section */}
       <div className="hidden md:flex w-2/3 bg-gray-100 justify-center items-center p-4 border-r border-gray-300">
         <img src={image} alt="Login" className="object-contain h-96 w-auto" />
       </div>
 
-      {/* Right Login Form Section */}
       <div className="flex flex-1 justify-center items-center p-6">
         <div className="w-full max-w-md bg-white shadow-lg rounded-lg p-8">
           <h2 className="text-2xl font-semibold text-center mb-6">Welcome Back</h2>
