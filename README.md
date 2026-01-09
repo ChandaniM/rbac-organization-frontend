@@ -71,3 +71,47 @@ export default defineConfig([
   },
 ])
 ```
+
+# 📁 Project Structure
+
+```text
+page
+└── layout
+    └── features
+        └── components
+            ├── Sidebar.tsx        (UI code example: Sidebar)
+            ├── AddUserForm.tsx    (UI code example: User Form)
+            └── DynamicDialog.tsx
+
+root/
+├── public/
+│   └── vite.svg
+│
+├── src/
+│   ├── assets/
+│   │
+│   ├── components/
+│   │   ├── AddUserForm.tsx
+│   │   ├── DynamicDialog.tsx
+│   │   └── Sidebar.tsx
+│   │
+│   ├── features/
+│   │   ├── addRoles.tsx
+│   │   └── addUser.tsx
+│   │
+│   ├── layouts/
+│   │   ├── authPageLayout.tsx
+│   │   └── dashboardLayout.tsx
+│   │
+│   ├── pages/
+│   │   ├── auth.tsx
+│   │   └── dashboard.tsx
+│   │
+│   ├── App.css
+│   ├── App.tsx
+│   ├── index.css
+│   ├── main.tsx
+│   └── router.tsx
+│
+├── index.html
+└── vite.config.ts
