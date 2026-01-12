@@ -1,24 +1,56 @@
-import { Box, Typography } from "@mui/material";
+import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 
-const Sidebar = () => {
+export const Sidebar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const menu = [
+    { name: "Dashboard", path: "/dashboard" },
+    { name: "Users", path: "/users" },
+    { name: "job portal", path: "/jobs" },
+    { name: "Setting", path: "/setting" },
+  ];
+
   return (
-    <Box
-      width={220}
-      bgcolor="#f4f6f8"
-      p={2}
-      borderRight="1px solid #ddd"
+    <List
+      sx={{
+        width: 240,
+        borderRight: "1px solid #ddd",
+        height: "100vh",
+        bgcolor: "white",
+      }}
     >
-      <Typography variant="h6">Dashboard</Typography>
+      {menu.map((item) => {
+        const isActive = location.pathname === item.path;
 
-      <Typography variant="body2" mt={2}>
-        Users
-      </Typography>
-
-      <Typography variant="body2">
-        Roles
-      </Typography>
-    </Box>
+        return (
+          <ListItem key={item.name} disablePadding>
+            <ListItemButton
+              onClick={() => navigate(item.path)}
+              sx={{
+                backgroundColor: isActive ? "#F1F5F9" : "transparent",
+                "&:hover": {
+                  backgroundColor: "#F8FAFC",
+                },
+                borderLeft: isActive
+                  ? "4px solid #3B82F6"
+                  : "4px solid transparent",
+              }}
+            >
+              <ListItemText
+                primary={item.name}
+                primaryTypographyProps={{
+                  fontSize: "14px",
+                  fontWeight: isActive ? "600" : "400",
+                  // Light shine blue color for text when active
+                  color: isActive ? "#3B82F6" : "#64748B",
+                }}
+              />
+            </ListItemButton>
+          </ListItem>
+        );
+      })}
+    </List>
   );
 };
-
-export default Sidebar;
