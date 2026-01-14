@@ -7,8 +7,9 @@ export const Sidebar = () => {
 
   const menu = [
     { name: "Dashboard", path: "/dashboard" },
-    { name: "Users", path: "/users" },
-    { name: "job portal", path: "/jobs" },
+    {name : "Organization Directory" , path:"/org-directory"},
+    {name : "org Tree" , path:"/org-tree"},
+    { name: "job portal", path: "/job-portal" },
     { name: "Setting", path: "/setting" },
   ];
 

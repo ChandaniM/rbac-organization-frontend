@@ -16,7 +16,7 @@ const router = createBrowserRouter([
         },
       },
       {
-        path: "/users",
+        path: "/org-directory",
         lazy: async () => {
           const UserManagement = (await import("../pages/UserManagement"))
             .default;
@@ -24,11 +24,27 @@ const router = createBrowserRouter([
         },
       },
       {
+        path: "/org-tree",
+        lazy: async () => {
+          const OrganizationTree = (await import("../pages/OrganizationTree"))
+            .default;
+          return { Component: OrganizationTree };
+        },
+      },
+      {
+        path: "/job-portal",
+        lazy: async () => {
+          const JobPortal = (await import("../pages/JobPortal"))
+            .default;
+          return { Component: JobPortal };
+        },
+      },
+      {
         path: "/setting",
         lazy: async () => {
-          const UserManagement = (await import("../pages/UserManagement"))
+          const setting = (await import("../pages/setting"))
             .default;
-          return { Component: UserManagement };
+          return { Component: setting };
         },
       },
     ],

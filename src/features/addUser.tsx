@@ -52,7 +52,7 @@ const AddUser = () => {
         sx={{ bgcolor: "#10B981", "&:hover": { bgcolor: "#059669" } }}
         onClick={() => setOpen(true)}
       >
-        Add User
+        Add Employee
       </Button>
 
       <DynamicDialog
