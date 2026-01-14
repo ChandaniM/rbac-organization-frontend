@@ -3,50 +3,88 @@ import {
   TextField,
   MenuItem,
   Button,
-  Typography,
-  Divider,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 
 interface AddJobFormProps {
   onCancel: () => void;
   onSubmit: (data: any) => void;
+  defaultValues?: {
+    title?: string;
+    department?: string;
+    type?: string;
+    experience?: string;
+    location?: string;
+    salary?: string;
+    description?: string;
+  };
 }
 
-export const AddJobForm = ({ onCancel, onSubmit }: AddJobFormProps) => {
+export const AddJobForm = ({
+  onCancel,
+  onSubmit,
+  defaultValues,
+}: AddJobFormProps) => {
   const departments = ["Engineering", "Product", "Design", "Marketing", "HR"];
   const jobTypes = ["Full-time", "Part-time", "Contract", "Internship"];
   const experienceLevels = ["Junior", "Mid", "Senior", "Lead"];
 
+  const [formData, setFormData] = useState({
+    title: "",
+    department: "",
+    type: "",
+    experience: "",
+    location: "Remote",
+    salary: "",
+    description: "",
+  });
+
+  // 🔥 Prefill data when editing
+  useEffect(() => {
+    if (defaultValues) {
+      setFormData((prev) => ({
+        ...prev,
+        ...defaultValues,
+      }));
+    }
+  }, [defaultValues]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-    onSubmit(data);
+    onSubmit(formData);
   };
 
   return (
-    <Box component='form' onSubmit={handleSubmit}>
-              {/* Job Title */}
-      <Box sx={{ mb: 2 }}>
+    <Box component="form" onSubmit={handleSubmit}>
+      {/* Job Title */}
+      <Box mb={2}>
         <TextField
-          name='title'
-          label='Job Title'
+          name="title"
+          label="Job Title"
+          value={formData.title}
+          onChange={handleChange}
           fullWidth
           required
-          size='small'
-          placeholder='e.g. Senior React Developer'
+          size="small"
         />
       </Box>
 
       {/* Department */}
-      <Box sx={{ mb: 2 }}>
+      <Box mb={2}>
         <TextField
-          name='department'
+          name="department"
           select
-          label='Department'
+          label="Department"
+          value={formData.department}
+          onChange={handleChange}
           fullWidth
           required
-          size='small'
+          size="small"
         >
           {departments.map((dept) => (
             <MenuItem key={dept} value={dept}>
@@ -57,14 +95,16 @@ export const AddJobForm = ({ onCancel, onSubmit }: AddJobFormProps) => {
       </Box>
 
       {/* Job Type */}
-      <Box sx={{ mb: 2 }}>
+      <Box mb={2}>
         <TextField
-          name='type'
+          name="type"
           select
-          label='Job Type'
+          label="Job Type"
+          value={formData.type}
+          onChange={handleChange}
           fullWidth
           required
-          size='small'
+          size="small"
         >
           {jobTypes.map((type) => (
             <MenuItem key={type} value={type}>
@@ -75,13 +115,15 @@ export const AddJobForm = ({ onCancel, onSubmit }: AddJobFormProps) => {
       </Box>
 
       {/* Experience */}
-      <Box sx={{ mb: 2 }}>
+      <Box mb={2}>
         <TextField
-          name='experience'
+          name="experience"
           select
-          label='Experience Level'
+          label="Experience Level"
+          value={formData.experience}
+          onChange={handleChange}
           fullWidth
-          size='small'
+          size="small"
         >
           {experienceLevels.map((level) => (
             <MenuItem key={level} value={level}>
@@ -92,53 +134,50 @@ export const AddJobForm = ({ onCancel, onSubmit }: AddJobFormProps) => {
       </Box>
 
       {/* Location */}
-      <Box sx={{ mb: 2 }}>
+      <Box mb={2}>
         <TextField
-          name='location'
-          label='Location'
+          name="location"
+          label="Location"
+          value={formData.location}
+          onChange={handleChange}
           fullWidth
-          size='small'
-          defaultValue='Remote'
+          size="small"
         />
       </Box>
 
       {/* Salary */}
-      <Box sx={{ mb: 2 }}>
+      <Box mb={2}>
         <TextField
-          name='salary'
-          label='Salary Range'
+          name="salary"
+          label="Salary Range"
+          value={formData.salary}
+          onChange={handleChange}
           fullWidth
-          size='small'
-          placeholder='e.g. $80k – $120k'
-          helperText='Optional'
+          size="small"
+          helperText="Optional"
         />
       </Box>
 
       {/* Description */}
-      <Box sx={{ mb: 3 }}>
+      <Box mb={3}>
         <TextField
-          name='description'
-          label='Job Description'
+          name="description"
+          label="Job Description"
+          value={formData.description}
+          onChange={handleChange}
           fullWidth
           multiline
           rows={5}
-          placeholder='Describe responsibilities, requirements, and benefits...'
         />
       </Box>
 
       {/* Actions */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          gap: 2,
-        }}
-      >
-        <Button onClick={onCancel} color='inherit'>
+      <Box display="flex" justifyContent="flex-end" gap={2}>
+        <Button onClick={onCancel} color="inherit">
           Cancel
         </Button>
-        <Button type='submit' variant='contained'>
-          Create Job
+        <Button type="submit" variant="contained">
+          {defaultValues ? "Update Job" : "Create Job"}
         </Button>
       </Box>
     </Box>

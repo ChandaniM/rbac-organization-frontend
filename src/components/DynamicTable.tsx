@@ -56,6 +56,8 @@ export function DynamicTable<T extends { id: string | number }>({
                 <TableCell key={col.key as string}>
                   {col.key === 'actions' ? (
                     <IconButton size="small" onClick={(e) => {
+                      console.log(e ,"clicked");
+                      
                       e.stopPropagation();
                       onActionClick?.(e, item);
                     }}>
