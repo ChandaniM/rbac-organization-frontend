@@ -1,7 +1,7 @@
-export const ModifyJobData =(data:any)=>{
-    const formattedData = data.map((job: any) => ({
-        ...job,
-        id: job._id // DynamicTable requires 'id'
+export const ModifyData =(data:any)=>{
+    const formattedData = data.map((formatData: any) => ({
+        ...formatData,
+        id: formatData._id 
       }));
       return formattedData
 }

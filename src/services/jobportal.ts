@@ -1,6 +1,6 @@
 import axios from 'axios';
 import endpoints from '../../endpoints';
-import { ModifyJobData } from '../utils/helper';
+import { ModifyData } from '../utils/helper';
 
 const BASE_URL = 'http://localhost:3000/api';
 
@@ -15,7 +15,7 @@ export const getAllJobs = async (page = 1, limit = 10 , search:string) => {
       });
   
       return {
-        jobs: ModifyJobData(response.data.data),
+        jobs: ModifyData(response.data.data),
         pagination: response.data.pagination,
       };
     } catch (error: any) {

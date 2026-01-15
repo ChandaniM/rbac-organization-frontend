@@ -205,7 +205,7 @@ const JobPortalFeature = () => {
             borderBottom='none'
             borderRadius='8px 8px 0 0'
           >
-            <SearchInput onSearch={(v) => handleSearch(v)} />
+            <SearchInput placeholder="'Search by title, department, location...'" onSearch={(v) => handleSearch(v)} />
           </Box>
           <div>
             <DynamicTable
