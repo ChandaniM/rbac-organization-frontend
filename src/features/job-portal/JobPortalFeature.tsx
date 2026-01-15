@@ -40,7 +40,7 @@ const JobPortalFeature = () => {
     searchTerm = search
   ) => {
     try {
-      const response = await getAllJobs(page, limit , searchTerm);
+      const response = await getAllJobs(page, limit, searchTerm);
 
       // 🔑 Map backend _id → frontend id
       const mappedJobs = response?.jobs.map((job: any) => ({
@@ -70,13 +70,13 @@ const JobPortalFeature = () => {
   };
 
   useEffect(() => {
-    fetchJobs(1, pagination.pageSize , search);
+    fetchJobs(1, pagination.pageSize, search);
   }, []);
 
   useEffect(() => {
     fetchJobs(1, pagination.pageSize, search);
   }, [search, pagination.pageSize]);
-  
+
   /* ================= TABLE COLUMNS ================= */
   const jobColumns: Column<Job>[] = [
     { key: "id", label: "Job ID" }, // Use _id from backend
@@ -170,11 +170,11 @@ const JobPortalFeature = () => {
     setSelectedJob(null);
   };
   const handlePageAction = (page: number) => {
-    fetchJobs(page, pagination.pageSize , search);
+    fetchJobs(page, pagination.pageSize, search);
   };
 
   const handleRowsPerPageChange = (rows: number) => {
-    fetchJobs(1, rows , search); // reset to page 1
+    fetchJobs(1, rows, search); // reset to page 1
   };
   const handleSearch = (v: string) => {
     setSearch(v);
@@ -205,7 +205,7 @@ const JobPortalFeature = () => {
             borderBottom='none'
             borderRadius='8px 8px 0 0'
           >
-<SearchInput onSearch={(v) => handleSearch(v)} />
+            <SearchInput onSearch={(v) => handleSearch(v)} />
           </Box>
           <div>
             <DynamicTable

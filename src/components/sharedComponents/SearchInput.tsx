@@ -8,7 +8,7 @@ export const SearchInput = ({ onSearch }: SearchProps) => (
     <input
       type='text'
       onChange={(e) => onSearch(e.target.value)}
-      placeholder='Search users...'
+      placeholder='Search by title, department, location...'
       className='border rounded px-3 py-1.5 outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all text-sm w-64'
     />
   </div>
