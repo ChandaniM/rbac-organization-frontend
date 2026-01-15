@@ -1,39 +1,97 @@
-import { Box, Button, Typography, Stack, Chip } from "@mui/material";
-import { useState } from "react";
+import { Box, Button, Typography, Stack, Chip, Menu, MenuItem } from "@mui/material";
+import { useEffect, useState } from "react";
 import { SearchInput } from "../../components/sharedComponents/SearchInput";
 import { DynamicTable, type Column } from "../../components/DynamicTable";
 import DynamicDialog from "../../components/DynamicDialog";
 import { AddJobForm } from "../../components/AddJobForm";
-import { Menu, MenuItem } from "@mui/material";
+import { getAllJobs, createJob, deleteJob, updateJob, } from "../../services/jobportal";
+import CustomPagination from "../../components/sharedComponents/Pagination";
 
 /* ================= TYPES ================= */
-
 interface Job {
-  id: string;
+  id: string; // Changed from 'id' to '_id' to match MongoDB/API
   title: string;
   department: string;
   type: string;
+  salary: string;
+  experience: string;
+  location: string;
   status: "Active" | "Closed" | "Draft";
   applicants: number;
 }
 
-/* ================= COMPONENT ================= */
-
 const JobPortalFeature = () => {
   const [open, setOpen] = useState(false);
   const [jobData, setJobData] = useState<Job[]>([]);
-  /* ================= TABLE COLUMNS ================= */
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [search, setSearch] = useState<string>("");
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalRecords: 0,
+    totalPages: 0,
+  });
 
+  /* ================= API CALL: FETCH ALL ================= */
+  const fetchJobs = async (
+    page = pagination.currentPage,
+    limit = pagination.pageSize,
+    searchTerm = search
+  ) => {
+    try {
+      const response = await getAllJobs(page, limit , searchTerm);
+
+      // 🔑 Map backend _id → frontend id
+      const mappedJobs = response?.jobs.map((job: any) => ({
+        id: job._id,
+        title: job.title,
+        department: job.department,
+        type: job.type,
+        salary: job.salary,
+        experience: job.experience,
+        location: job.location,
+        status: job.status,
+        applicants: job.applicants,
+      }));
+
+      setJobData(mappedJobs);
+
+      setPagination((prev) => ({
+        ...prev,
+        currentPage: response.pagination.page,
+        pageSize: response.pagination.limit,
+        totalRecords: response.pagination.totalRecords,
+        totalPages: response.pagination.totalPages,
+      }));
+    } catch (error) {
+      console.error("Failed to fetch jobs", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchJobs(1, pagination.pageSize , search);
+  }, []);
+
+  useEffect(() => {
+    fetchJobs(1, pagination.pageSize, search);
+  }, [search, pagination.pageSize]);
+  
+  /* ================= TABLE COLUMNS ================= */
   const jobColumns: Column<Job>[] = [
-    { key: "id", label: "Job ID" },
+    { key: "id", label: "Job ID" }, // Use _id from backend
     { key: "title", label: "Position Name" },
     { key: "department", label: "Department" },
+    { key: "salary", label: "Salary" },
+    { key: "experience", label: "Experience" },
+    { key: "location", label: "Location" },
+    { key: "type", label: "Job Type" },
     {
       key: "status",
       label: "Status",
       render: (val) => (
         <Chip
-          label={val}
+          label={val || "Active"}
           size='small'
           color={
             val === "Active"
@@ -46,11 +104,7 @@ const JobPortalFeature = () => {
         />
       ),
     },
-    { key: "applicants", label: "Applicants" },
-    {
-      key: "actions",
-      label: "Actions",
-    },
+    { key: "actions", label: "Actions" },
   ];
 
   /* ================= HANDLERS ================= */
@@ -65,46 +119,46 @@ const JobPortalFeature = () => {
     setOpen(true);
   };
 
-  const handleDeleteJob = (jobId: string) => {
-    console.log(jobId, "deleted id");
+  // API CALL: DELETE
+  const handleDeleteJob = async (jobId: string) => {
+    try {
+      await deleteJob(jobId);
+      // Update UI by filtering out the deleted job
+      setJobData((prev) => prev.filter((job) => job.id !== jobId));
+      handleMenuClose();
+    } catch (error) {
+      alert("Failed to delete job");
+    }
+  };
 
-    setJobData((prev) => prev.filter((job) => job.id !== jobId));
+  // API CALL: CREATE & UPDATE
+  const handleFormSubmit = async (data: any) => {
+    try {
+      if (selectedJob) {
+        // UPDATE MODE
+        await updateJob(selectedJob.id, data);
+      } else {
+        // CREATE MODE
+        await createJob({
+          ...data,
+          status: "Active",
+          applicants: 0,
+        });
+      }
+
+      // Refresh list from server to show latest data
+      await fetchJobs();
+      handleCloseDialog();
+    } catch (error) {
+      console.error("Error saving job:", error);
+      alert("Error saving job data");
+    }
   };
 
   const handleCloseDialog = () => {
     setSelectedJob(null);
     setOpen(false);
   };
-
-  const handleFormSubmit = (data: any) => {
-    if (selectedJob) {
-      // EDIT MODE
-      setJobData((prev) =>
-        prev.map((job) =>
-          job.id === selectedJob.id ? { ...job, ...data } : job
-        )
-      );
-    } else {
-      // CREATE MODE
-      const newJob: Job = {
-        id: `J${Date.now()}`,
-        title: data.title,
-        department: data.department,
-        type: data.type,
-        status: "Active",
-        applicants: 0,
-      };
-
-      setJobData((prev) => [...prev, newJob]);
-    }
-
-    handleCloseDialog();
-  };
-
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
-
-  const openMenu = Boolean(anchorEl);
 
   const handleActionClick = (event: React.MouseEvent, job: Job) => {
     setAnchorEl(event.currentTarget as HTMLElement);
@@ -115,12 +169,19 @@ const JobPortalFeature = () => {
     setAnchorEl(null);
     setSelectedJob(null);
   };
+  const handlePageAction = (page: number) => {
+    fetchJobs(page, pagination.pageSize , search);
+  };
 
-  /* ================= UI ================= */
-
+  const handleRowsPerPageChange = (rows: number) => {
+    fetchJobs(1, rows , search); // reset to page 1
+  };
+  const handleSearch = (v: string) => {
+    setSearch(v);
+    // We don't call fetchJobs here manually; the useEffect handles it
+  };
   return (
     <Box>
-      {/* Header */}
       <Stack
         direction='row'
         justifyContent='space-between'
@@ -134,9 +195,9 @@ const JobPortalFeature = () => {
           Post New Job
         </Button>
       </Stack>
+
       {jobData.length > 0 ? (
         <>
-          {/* Search */}
           <Box
             bgcolor='white'
             p={2}
@@ -144,21 +205,29 @@ const JobPortalFeature = () => {
             borderBottom='none'
             borderRadius='8px 8px 0 0'
           >
-            <SearchInput onSearch={(v) => console.log(v)} />
+<SearchInput onSearch={(v) => handleSearch(v)} />
           </Box>
+          <div>
+            <DynamicTable
+              columns={jobColumns}
+              data={jobData}
+              onActionClick={handleActionClick}
+            />
+            <CustomPagination
+              totalItems={pagination.totalRecords}
+              itemsPerPage={pagination.pageSize}
+              currentPage={pagination.currentPage}
+              onPageChange={handlePageAction}
+              onRowsPerPageChange={handleRowsPerPageChange}
+            />
+          </div>
 
-          <DynamicTable
-            columns={jobColumns}
-            data={jobData}
-            onActionClick={handleActionClick}
-          />
-
-          <Menu anchorEl={anchorEl} open={openMenu} onClose={handleMenuClose}>
-            <MenuItem
-              onClick={() => {
-                if (selectedJob) handleEditJob(selectedJob);
-              }}
-            >
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleMenuClose}
+          >
+            <MenuItem onClick={() => selectedJob && handleEditJob(selectedJob)}>
               Edit
             </MenuItem>
             <MenuItem
@@ -179,12 +248,9 @@ const JobPortalFeature = () => {
         open={open}
         header={{
           title: selectedJob ? "Edit Job Posting" : "Create Job Posting",
-          subtitle: selectedJob
-            ? "Update the job details below"
-            : "Provide the details below to publish a new job opening",
+          subtitle: selectedJob ? "Update details" : "Publish new job",
         }}
         onClose={handleCloseDialog}
-        onComplete={handleCloseDialog}
       >
         <AddJobForm
           onCancel={handleCloseDialog}

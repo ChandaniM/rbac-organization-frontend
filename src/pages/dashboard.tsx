@@ -16,6 +16,9 @@ const Dashboard = () => {
     <Layout>
       <Box mb={4}>
         <Typography variant="h4" fontWeight="700">Dashboard Management</Typography>
+        <div>
+          
+        </div>
       </Box>
     </Layout>
   );
