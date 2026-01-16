@@ -1,6 +1,9 @@
 
 import { Link } from "react-router-dom";
 const login = () => {
+    const login = () =>{
+        localStorage.setItem("tenantId", "695ff1f95edfddfea9b86d5b");
+    }
     return (
         <>
             <h2 className="text-2xl font-bold mb-6 text-center">Welcome Back to Login Page</h2>
@@ -32,6 +35,7 @@ const login = () => {
                 <button
                     type="submit"
                     className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 transition-colors"
+                    onClick={login}
                 >
                     Login
                 </button>

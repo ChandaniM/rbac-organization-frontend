@@ -21,6 +21,8 @@ interface Job {
 }
 
 const JobPortalFeature = () => {
+
+  const [tenantId, setTenantId] = useState<string | null>(() => localStorage.getItem("tenantId"));
   const [open, setOpen] = useState(false);
   const [jobData, setJobData] = useState<Job[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -35,12 +37,17 @@ const JobPortalFeature = () => {
 
   /* ================= API CALL: FETCH ALL ================= */
   const fetchJobs = async (
+   
     page = pagination.currentPage,
     limit = pagination.pageSize,
     searchTerm = search
   ) => {
+    if (!tenantId) {
+      console.error("No Tenant ID found");
+      return;
+    }
     try {
-      const response = await getAllJobs(page, limit, searchTerm);
+      const response = await getAllJobs(tenantId! , page, limit, searchTerm);
 
       // 🔑 Map backend _id → frontend id
       const mappedJobs = response?.jobs.map((job: any) => ({
@@ -70,12 +77,19 @@ const JobPortalFeature = () => {
   };
 
   useEffect(() => {
-    fetchJobs(1, pagination.pageSize, search);
+    const tenantId = localStorage.getItem("tenantId");
+    if (!tenantId) {
+      throw new Error("Tenant ID not found. Please login again.");
+    }
+      setTenantId(tenantId)
+      fetchJobs(1, pagination.pageSize, search);
   }, []);
 
   useEffect(() => {
-    fetchJobs(1, pagination.pageSize, search);
-  }, [search, pagination.pageSize]);
+    if (tenantId) {
+      fetchJobs(1, pagination.pageSize, search);
+    }
+  }, [tenantId, search, pagination.pageSize]);
 
   /* ================= TABLE COLUMNS ================= */
   const jobColumns: Column<Job>[] = [
@@ -122,10 +136,11 @@ const JobPortalFeature = () => {
   // API CALL: DELETE
   const handleDeleteJob = async (jobId: string) => {
     try {
-      await deleteJob(jobId);
-      // Update UI by filtering out the deleted job
-      setJobData((prev) => prev.filter((job) => job.id !== jobId));
-      handleMenuClose();
+      if (tenantId) {
+        await deleteJob(tenantId, jobId);
+        setJobData((prev) => prev.filter((job) => job.id !== jobId));
+        handleMenuClose();
+      }
     } catch (error) {
       alert("Failed to delete job");
     }
@@ -134,18 +149,18 @@ const JobPortalFeature = () => {
   // API CALL: CREATE & UPDATE
   const handleFormSubmit = async (data: any) => {
     try {
-      if (selectedJob) {
-        // UPDATE MODE
-        await updateJob(selectedJob.id, data);
-      } else {
-        // CREATE MODE
-        await createJob({
-          ...data,
-          status: "Active",
-          applicants: 0,
-        });
+      if (!tenantId) return;
+        if (selectedJob) {
+          // UPDATE MODE
+          await updateJob(tenantId ,selectedJob.id, data);
+        } else {
+          // CREATE MODE
+          await createJob(tenantId , {
+            ...data,
+            status: "Active",
+            applicants: 0,
+          });
       }
-
       // Refresh list from server to show latest data
       await fetchJobs();
       handleCloseDialog();
@@ -227,7 +242,7 @@ const JobPortalFeature = () => {
             open={Boolean(anchorEl)}
             onClose={handleMenuClose}
           >
-            <MenuItem onClick={() => selectedJob && handleEditJob(selectedJob)}>
+            <MenuItem onClick={() => selectedJob && handleEditJob( selectedJob)}>
               Edit
             </MenuItem>
             <MenuItem

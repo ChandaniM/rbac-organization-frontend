@@ -4,13 +4,14 @@ import { ModifyData } from '../utils/helper';
 
 const BASE_URL = 'http://localhost:3000/api';
 
-export const getAllJobs = async (page = 1, limit = 10 , search:string) => {
+export const getAllJobs = async ( tenantId: string, page = 1, limit = 10 , search:string) => {
     try {
     const params: any = { page, limit };
     if (search && search.trim() !== "") {
         params.search = search;
-    }
-      const response = await axios.get(`${BASE_URL}/getJob`, {
+    }   
+    console.log("URL : " , `${BASE_URL}/${tenantId}${endpoints.getAllJobs}`)
+      const response = await axios.get(`${BASE_URL}/${tenantId}${endpoints.getAllJobs}`, {
         params,
       });
   
@@ -25,9 +26,9 @@ export const getAllJobs = async (page = 1, limit = 10 , search:string) => {
   };
   
 // 2. CREATE A NEW JOB
-export const createJob = async (jobData:any) => {
+export const createJob = async (tenantId :string, jobData:any) => {
     try {
-        const response = await axios.post(`${BASE_URL}${endpoints.addNewJob}`, jobData, {
+        const response = await axios.post(`${BASE_URL}/${tenantId}${endpoints.addNewJob}`, jobData, {
             headers: { 'Content-Type': 'application/json' }
         });
         return response.data;
@@ -38,9 +39,10 @@ export const createJob = async (jobData:any) => {
 };
 
 // 3. DELETE A JOB
-export const deleteJob = async (jobId:string) => {
+export const deleteJob = async (tenantId :string , jobId:string) => {
     try {
-        const response = await axios.delete(`${BASE_URL}/${jobId}`);
+        console.log(`${BASE_URL}/${tenantId}/${jobId}` , "deleteJob");
+        const response = await axios.delete(`${BASE_URL}/${tenantId}/${jobId}`);
         return response.data;
     } catch (error:any) {
         console.error("Delete Error:", error.response?.data || error.message);
@@ -49,9 +51,9 @@ export const deleteJob = async (jobId:string) => {
 };
 
 // 4. UPDATE A JOB (e.g., Change status to 'Closed')
-export const updateJob = async (jobId:string, updateData:any) => {
+export const updateJob = async (tenantId : string , jobId:string, updateData:any) => {
     try {
-        const response = await axios.put(`${BASE_URL}/${jobId}`, updateData);
+        const response = await axios.put(`${BASE_URL}/${tenantId}/${jobId}`, updateData);
         return response.data;
     } catch (error:any) {
         console.error("Update Error:", error.response?.data || error.message);
