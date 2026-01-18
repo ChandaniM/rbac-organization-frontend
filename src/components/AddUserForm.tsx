@@ -9,26 +9,57 @@ import {
   Select,
   Stack,
   TextField,
-  Typography,
 } from "@mui/material";
+import { useEffect, useState } from "react";
 
 type AddUserFormProps = {
   onComplete?: (data: any) => void;
   onClose?: () => void;
+  defaultValues?: {
+    username?: string;
+    email?: string;
+    is_active?: boolean;
+    role_id?: string | number;
+  };
 };
 
-const AddUserForm: React.FC<AddUserFormProps> = ({ onComplete, onClose }) => {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+const AddUserForm: React.FC<AddUserFormProps> = ({
+  onComplete,
+  onClose,
+  defaultValues,
+}) => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    is_active: true,
+    role_id: "",
+    sendInvite: true,
+  });
 
-    // dummy payload (UI only)
-    onComplete?.({
-      username: "",
-      email: "",
-      is_active: true,
-      role_id: "",
-      send_invite: true,
-    });
+  /** 🔁 Prefill form in Edit mode */
+  useEffect(() => {
+    if (defaultValues) {
+      setFormData((prev: any) => ({
+        ...prev,
+        ...defaultValues,
+      }));
+    }
+  }, [defaultValues]);
+
+  /** 🧠 Single change handler */
+  const handleChange = (e: any) => {
+    const { name, value, type, checked } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    console.log(formData , "61")
+    onComplete?.(formData);
   };
 
   return (
@@ -37,15 +68,18 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onComplete, onClose }) => {
         <TextField
           label='Username'
           name='username'
-          placeholder='john_doe'
+          value={formData.username}
+          onChange={handleChange}
           fullWidth
           required
         />
+
         <TextField
           label='Email Address'
           name='email'
           type='email'
-          placeholder='john@example.com'
+          value={formData.email}
+          onChange={handleChange}
           fullWidth
           required
         />
@@ -53,26 +87,43 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onComplete, onClose }) => {
         {/* Status */}
         <FormControl fullWidth>
           <InputLabel>Status</InputLabel>
-          <Select name='is_active' label='Status' defaultValue='true'>
-            <MenuItem value='true'>Active</MenuItem>
-            <MenuItem value='false'>Inactive</MenuItem>
-          </Select>
+          <Select
+  name='is_active'
+  value={String(formData.is_active)}
+  label='Status'
+  onChange={handleChange}
+>
+  <MenuItem value='true'>Active</MenuItem>
+  <MenuItem value='false'>Inactive</MenuItem>
+</Select>
+
         </FormControl>
 
         {/* Role */}
         <FormControl fullWidth required>
           <InputLabel>Role</InputLabel>
-          <Select name='role_id' label='Role' defaultValue=''>
+          <Select
+            name='role_id'
+            value={formData.role_id}
+            label='Role'
+            onChange={handleChange}
+          >
             <MenuItem value=''>Select role</MenuItem>
-            <MenuItem value={1}>Org Admin</MenuItem>
-            <MenuItem value={2}>Manager</MenuItem>
-            <MenuItem value={3}>Employee</MenuItem>
+            <MenuItem value='ORG_ADMIN'>Org Admin</MenuItem>
+            <MenuItem value='MANAGER'>Manager</MenuItem>
+            <MenuItem value='EMPLOYEE'>Employee</MenuItem>
           </Select>
         </FormControl>
 
         {/* Invite */}
         <FormControlLabel
-          control={<Checkbox defaultChecked />}
+          control={
+            <Checkbox
+              name='sendInvite'
+              checked={formData.sendInvite}
+              onChange={handleChange}
+            />
+          }
           label='Send email invitation'
         />
 
@@ -80,7 +131,7 @@ const AddUserForm: React.FC<AddUserFormProps> = ({ onComplete, onClose }) => {
         <Stack direction='row' spacing={2} justifyContent='flex-end'>
           <Button onClick={onClose}>Cancel</Button>
           <Button type='submit' variant='contained'>
-            Add User
+            Save User
           </Button>
         </Stack>
       </Stack>

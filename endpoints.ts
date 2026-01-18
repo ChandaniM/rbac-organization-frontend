@@ -1,6 +1,7 @@
 const endpoints = {
     getAllJobs: '/getJob',
-    addNewJob:'/add'
+    addNewJob:'/add',
+    login : '/login'
   };
   
   export default endpoints;

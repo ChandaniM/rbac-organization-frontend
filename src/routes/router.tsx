@@ -50,7 +50,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: "auth/:type",
+    path: "/auth/:type",
     lazy: async () => {
       const AuthPage = (await import("../pages/auth")).default;
       return { Component: AuthPage };

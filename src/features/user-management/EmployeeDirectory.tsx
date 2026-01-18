@@ -1,138 +1,159 @@
-import { useEffect, useState } from "react";
-import AddUser from "../../features/addUser";
-import { Chip } from "@mui/material";
-import CustomPagination from "../../components/sharedComponents/Pagination";
+import { useState } from "react";
+import DynamicDialog from "../../components/DynamicDialog";
+import AddUserForm from "../../components/AddUserForm";
+import { Button, Menu, MenuItem } from "@mui/material";
 import { DynamicTable, type Column } from "../../components/DynamicTable";
-import { SearchInput } from "../../components/sharedComponents/SearchInput";
-import { getAllEmployees } from "../../services/employeeDirectory";
-const EmployeeDirectory = () => {
-    const [search, setSearch] = useState("");
-    const [pagination, setPagination] = useState({
-        current: 1,
-        pageSize: 10,
-        total: 100,
-    });
-    const users = [
-        {
-            id: 4037,
-            name: "Dipak Deb Nath",
-            email: "dipak.uiux@gmail.com",
-            status: "Active",
-            designation: "Super Admin",
-            code: "0121",
-            role: "Admin",
-        },
-        {
-            id: 4037,
-            name: "Pappu Baidya",
-            email: "dipak.uiux@gmail.com",
-            status: "Active",
-            designation: "Manager",
-            code: "0121",
-            role: "Admin",
-        },
-        {
-            id: 4037,
-            name: "Shipon Mohanta",
-            email: "dipak.uiux@gmail.com",
-            status: "Active",
-            designation: "Trainer",
-            code: "0121",
-            role: "Instructor",
-        },
-    ];
-
-    const userColumns: Column<any>[] = [
-        {
-            key: "name",
-            label: "User Name",
-        },
-        {
-            key: "id",
-            label: "User ID",
-        },
-        {
-            key: "status",
-            label: "Status",
-            render: (val) => (
-                <Chip
-                    label={val}
-                    size='small'
-                    color={val === "Active" ? "success" : "default"}
-                    variant='outlined'
-                />
-            ),
-        },
-        {
-            key: "designation",
-            label: "Designation",
-        },
-        {
-            key: "employeeCode",
-            label: "Employee Code",
-        },
-        {
-            key: "role",
-            label: "Role",
-        },
-        {
-            key: "actions",
-            label: "Manage", // 👈 3-dot menu comes automatically
-        },
-    ];
-    // ON INIT
-    useEffect(() => {
-        fetchEmployee(pagination.current, pagination.pageSize, search);
-    }, []);
-
-    // ON CHANGES
-    useEffect(() => {
-        fetchEmployee(pagination.current, pagination.pageSize, search);
-    }, [search, pagination.current]);
-
-    // GET ALL EMPLOYEE 
-    const fetchEmployee = async (page: number, pageSize: number, search: string) => {
-        const employeData = await getAllEmployees(page , pageSize , search)
-    }
-    const handlePageAction = (newPage: number) => {
-        console.log("User moved to page:", newPage);
-        setPagination((prev) => ({ ...prev, current: newPage }));
-    };
-    const handleActionClick = (event: React.MouseEvent, userData: any) => {
-        console.log(userData, "handleactionclicked");
-    };
-    const handleSearch = (value: string) => {
-        console.log("Searching for:", value);
-        setSearch(value)
-    };
-    return (
-        <>
-            <AddUser />
-            <div style={{ backgroundColor: 'white', padding: '16px', borderBottom: '1px solid #eee' }}>
-                <SearchInput
-                    placeholder="Search by name, email or designation..."
-                    onSearch={(value) => handleSearch(value)}
-                />
-            </div>
-            {search}
-            <div>
-                <DynamicTable
-                    columns={userColumns}
-                    data={users}
-                    onActionClick={handleActionClick}
-                />
-                <CustomPagination
-                    totalItems={pagination.total}
-                    itemsPerPage={pagination.pageSize}
-                    currentPage={pagination.current}
-                    onPageChange={handlePageAction}
-                    onRowsPerPageChange={(rows) =>
-                        setPagination((prev) => ({ ...prev, pageSize: rows }))
-                    }
-                />
-            </div>
-        </>
-    )
+import CustomPagination from "../../components/sharedComponents/Pagination";
+import AssignReportingManagerDialog from "../../components/AssignReportingManagerDialog";
+interface Employee {
+  id: string | number;
+  name: string;
+  status?: string;
+  role?: string;
 }
-export default EmployeeDirectory;
 
+const EmployeeDirectory = () => {
+  const [opendialogManager, setOpendialogManager] = useState<boolean>(false);
+
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [tableData, setTableData] = useState<Employee[]>([]);
+  const [selectedRow, setSelectedRow] = useState<Employee | null>(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    pageSize: 10,
+    totalRecords: 0,
+    totalPages: 0,
+  });
+
+  const [open, setOpen] = useState(false);
+
+  const userColumns: Column<any>[] = [
+    { key: "id", label: "Job ID" },
+    { key: "name", label: "Employee Name" },
+    { key: "status", label: "Status" },
+    { key: "role", label: "Role" },
+    { key: "actions", label: "Actions" },
+  ];
+  const addEmployee = (data: any) => {
+    console.log(data, "218");
+    setTableData((prev: any) => [
+      ...prev,
+      {
+        id: data.username + Math.floor(Math.random() * 1000),
+        name: data.username,
+        status: data.is_active ? "Active" : "Inactive",
+        role: data.role_id,
+      },
+    ]);
+    setOpen(false);
+  };
+  function handleActionClick(
+    event: React.MouseEvent<any>,
+    item: Employee
+  ): void {
+    setAnchorEl(event.currentTarget);
+    setSelectedRow(item);
+  }
+
+  function handlePageAction(page: number): void {
+    console.log(page, "56");
+  }
+
+  function handleRowsPerPageChange(rows: number): void {
+    console.log(rows);
+  }
+
+  const handleMenuClose = () => {
+    setAnchorEl(null);
+  };
+  const handleManagerDialogOpen = (value: boolean) => {
+    setOpendialogManager(value);
+  };
+
+  const handleAssignManager = (data: any) => {
+    console.log("Manager Assigned:", data);
+    setOpendialogManager(false); // Success ke baad dialog close karein
+  };
+
+  return (
+    <>
+      <div className='employee-container'>
+        <div className='header flex gap-4 justify-end'>
+          <Button
+          variant="outlined"
+          className="outline"
+          onClick={() => handleManagerDialogOpen(true)}>
+            Add Reporting Manager
+          </Button>
+          <Button
+            variant='contained'
+            sx={{ bgcolor: "#10B981", "&:hover": { bgcolor: "#059669" } }}
+            onClick={() => setOpen(true)}
+          >
+            Add Employee
+          </Button>
+        </div>
+        {tableData.length > 0 ? (
+        <div className=''>
+          <DynamicTable
+            columns={userColumns}
+            data={tableData}
+            onActionClick={handleActionClick}
+          />
+          <CustomPagination
+            totalItems={pagination.totalRecords}
+            itemsPerPage={pagination.pageSize}
+            currentPage={pagination.currentPage}
+            onPageChange={handlePageAction}
+            onRowsPerPageChange={handleRowsPerPageChange}
+          />
+        </div>):(
+          <div style={{ padding: "20px", textAlign: "center" }}>
+    No Employees found. Click "Add Employee" to start.
+  </div>
+)}
+        <Menu
+          anchorEl={anchorEl}
+          open={Boolean(anchorEl)}
+          onClose={handleMenuClose}
+        >
+          <MenuItem onClick={() => console.log("edit")}>Edit</MenuItem>
+          <MenuItem
+            onClick={() => console.log("delete")}
+            sx={{ color: "error.main" }}
+          >
+            Delete
+          </MenuItem>
+        </Menu>
+      </div>
+      <DynamicDialog
+        open={open}
+        header={{
+          title: "Add User",
+          subtitle: "Create a new organization user",
+        }}
+        onClose={() => setOpen(false)}
+      >
+        <>
+          <AddUserForm
+            onComplete={(data) => {
+              console.log("onComplete is:", "swkm");
+              console.log("CREATE:", data);
+              addEmployee(data);
+            }}
+            onClose={() => {
+              console.log("close event");
+            }}
+          />
+        </>
+      </DynamicDialog>
+      <AssignReportingManagerDialog
+        open={opendialogManager}
+        onClose={() => setOpendialogManager(false)}
+        users={tableData} // Yahan wo users bhejien jinhe manager assign karna hai
+        onAssign={handleAssignManager} // Submit handle karne ke liye function
+      />
+    </>
+  );
+};
+export default EmployeeDirectory;
