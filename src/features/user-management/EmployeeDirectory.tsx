@@ -5,6 +5,7 @@ import { Button, Menu, MenuItem } from "@mui/material";
 import { DynamicTable, type Column } from "../../components/DynamicTable";
 import CustomPagination from "../../components/sharedComponents/Pagination";
 import AssignReportingManagerDialog from "../../components/AssignReportingManagerDialog";
+import CreateOrgDialog from "../../components/CreateOrgDialog";
 interface Employee {
   id: string | number;
   name: string;
@@ -74,9 +75,18 @@ const EmployeeDirectory = () => {
     console.log("Manager Assigned:", data);
     setOpendialogManager(false); // Success ke baad dialog close karein
   };
-  const creatOrgUser = () =>{
-    console.log("THIS BUTTON ONLY AVALAABLE FOR CREATE ORGANZIATION AND ITS ADMIN")
-  }
+ 
+  const [openOrgDialog, setOpenOrgDialog] = useState(false);
+
+const creatOrgUser = () => {
+  setOpenOrgDialog(true);
+};
+const handleCreateOrg = (data: { org: any; user: any }) => {
+  console.log("Org Data:", data);
+  // Call your API here
+  // await createOrganization(data);
+  setOpenOrgDialog(false);
+};
   return (
     <>
       <div className='employee-container'>
@@ -158,6 +168,11 @@ const EmployeeDirectory = () => {
           />
         </>
       </DynamicDialog>
+      <CreateOrgDialog
+      open={openOrgDialog}
+      onClose={() => setOpenOrgDialog(false)}
+      onSubmit={handleCreateOrg}
+    />
       <AssignReportingManagerDialog
         open={opendialogManager}
         onClose={() => setOpendialogManager(false)}
