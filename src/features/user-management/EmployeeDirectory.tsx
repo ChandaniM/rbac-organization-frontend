@@ -74,15 +74,25 @@ const EmployeeDirectory = () => {
     console.log("Manager Assigned:", data);
     setOpendialogManager(false); // Success ke baad dialog close karein
   };
-
+  const creatOrgUser = () =>{
+    console.log("THIS BUTTON ONLY AVALAABLE FOR CREATE ORGANZIATION AND ITS ADMIN")
+  }
   return (
     <>
       <div className='employee-container'>
         <div className='header flex gap-4 justify-end'>
+        <Button
+            variant='outlined'
+            className='outline'
+            onClick={() => creatOrgUser()}
+          >
+           Add Org
+          </Button>
           <Button
-          variant="outlined"
-          className="outline"
-          onClick={() => handleManagerDialogOpen(true)}>
+            variant='outlined'
+            className='outline'
+            onClick={() => handleManagerDialogOpen(true)}
+          >
             Add Reporting Manager
           </Button>
           <Button
@@ -94,24 +104,25 @@ const EmployeeDirectory = () => {
           </Button>
         </div>
         {tableData.length > 0 ? (
-        <div className=''>
-          <DynamicTable
-            columns={userColumns}
-            data={tableData}
-            onActionClick={handleActionClick}
-          />
-          <CustomPagination
-            totalItems={pagination.totalRecords}
-            itemsPerPage={pagination.pageSize}
-            currentPage={pagination.currentPage}
-            onPageChange={handlePageAction}
-            onRowsPerPageChange={handleRowsPerPageChange}
-          />
-        </div>):(
+          <div className=''>
+            <DynamicTable
+              columns={userColumns}
+              data={tableData}
+              onActionClick={handleActionClick}
+            />
+            <CustomPagination
+              totalItems={pagination.totalRecords}
+              itemsPerPage={pagination.pageSize}
+              currentPage={pagination.currentPage}
+              onPageChange={handlePageAction}
+              onRowsPerPageChange={handleRowsPerPageChange}
+            />
+          </div>
+        ) : (
           <div style={{ padding: "20px", textAlign: "center" }}>
-    No Employees found. Click "Add Employee" to start.
-  </div>
-)}
+            No Employees found. Click "Add Employee" to start.
+          </div>
+        )}
         <Menu
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}

@@ -3,6 +3,7 @@ import endpoints from '../../endpoints';
 import { ModifyData } from '../utils/helper';
 
 const BASE_URL = 'http://localhost:3000/api';
+const authToken = localStorage.getItem("token");
 
 export const getAllJobs = async ( tenantId: string, page = 1, limit = 10 , search:string) => {
     try {
@@ -11,9 +12,17 @@ export const getAllJobs = async ( tenantId: string, page = 1, limit = 10 , searc
         params.search = search;
     }   
     console.log("URL : " , `${BASE_URL}/${tenantId}${endpoints.getAllJobs}`)
-      const response = await axios.get(`${BASE_URL}/${tenantId}${endpoints.getAllJobs}`, {
-        params,
-      });
+      
+    const response = await axios.get(
+        `${BASE_URL}/${tenantId}${endpoints.getAllJobs}`,
+        {
+          params,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
   
       return {
         jobs: ModifyData(response.data.data),
@@ -29,7 +38,9 @@ export const getAllJobs = async ( tenantId: string, page = 1, limit = 10 , searc
 export const createJob = async (tenantId :string, jobData:any) => {
     try {
         const response = await axios.post(`${BASE_URL}/${tenantId}${endpoints.addNewJob}`, jobData, {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' ,
+                Authorization: `Bearer ${authToken}`,
+            }
         });
         return response.data;
     } catch (error:any) {
@@ -42,7 +53,11 @@ export const createJob = async (tenantId :string, jobData:any) => {
 export const deleteJob = async (tenantId :string , jobId:string) => {
     try {
         console.log(`${BASE_URL}/${tenantId}/${jobId}` , "deleteJob");
-        const response = await axios.delete(`${BASE_URL}/${tenantId}/${jobId}`);
+        const response = await axios.delete(`${BASE_URL}/${tenantId}/${jobId}`,{
+            headers: { 'Content-Type': 'application/json' ,
+                Authorization: `Bearer ${authToken}`,
+            }
+        });
         return response.data;
     } catch (error:any) {
         console.error("Delete Error:", error.response?.data || error.message);
@@ -51,12 +66,33 @@ export const deleteJob = async (tenantId :string , jobId:string) => {
 };
 
 // 4. UPDATE A JOB (e.g., Change status to 'Closed')
-export const updateJob = async (tenantId : string , jobId:string, updateData:any) => {
-    try {
-        const response = await axios.put(`${BASE_URL}/${tenantId}/${jobId}`, updateData);
-        return response.data;
-    } catch (error:any) {
-        console.error("Update Error:", error.response?.data || error.message);
-        throw error;
+export const updateJob = async (
+    tenantId: string,
+    jobId: string,
+    updateData: any
+  ) => {
+    const authToken = localStorage.getItem("token");
+  
+    if (!authToken) {
+      throw new Error("Auth token not found");
     }
-};
+  
+    try {
+      const response = await axios.put(
+        `${BASE_URL}/${tenantId}/${jobId}`,
+        updateData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${authToken}`,
+          },
+        }
+      );
+  
+      return response.data;
+    } catch (error: any) {
+      console.error("Update Error:", error.response?.data || error.message);
+      throw error;
+    }
+  };
+  

@@ -31,8 +31,8 @@ const Login = () => {
 
       // store tenantId from API
       localStorage.setItem("tenantId", response.tenantId);
-
-      // optional
+      localStorage.setItem("token", JSON.stringify(response.token))
+      // // optional
       localStorage.setItem("user", JSON.stringify(response.user));
       localStorage.setItem("org", JSON.stringify(response.org));
 
