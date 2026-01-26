@@ -6,6 +6,7 @@ import DynamicDialog from "../../components/DynamicDialog";
 import { AddJobForm } from "../../components/AddJobForm";
 import { getAllJobs, createJob, deleteJob, updateJob, } from "../../services/jobportal";
 import CustomPagination from "../../components/sharedComponents/Pagination";
+import { useAuth } from "../../store/AuthContext";
 
 /* ================= TYPES ================= */
 interface Job {
@@ -21,8 +22,9 @@ interface Job {
 }
 
 const JobPortalFeature = () => {
-
-  const [tenantId, setTenantId] = useState<string | null>(() => localStorage.getItem("tenantId"));
+  const { user: authUser, token, logout } = useAuth();
+// tenantId comes from JWT payload
+const tenantId = authUser?.tenantId;
   const [open, setOpen] = useState(false);
   const [jobData, setJobData] = useState<Job[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -43,7 +45,8 @@ const JobPortalFeature = () => {
     searchTerm = search
   ) => {
     if (!tenantId) {
-      console.error("No Tenant ID found");
+      console.error("No Tenant ID found, redirecting to login");
+      logout(); // optional: redirect to login
       return;
     }
     try {
@@ -77,12 +80,7 @@ const JobPortalFeature = () => {
   };
 
   useEffect(() => {
-    const tenantId = localStorage.getItem("tenantId");
-    if (!tenantId) {
-      throw new Error("Tenant ID not found. Please login again.");
-    }
-      setTenantId(tenantId)
-      fetchJobs(1, pagination.pageSize, search);
+   fetchJobs(1, pagination.pageSize, search);
   }, []);
 
   useEffect(() => {

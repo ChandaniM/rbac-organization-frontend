@@ -1,9 +1,11 @@
 import { Link, useNavigate } from "react-router-dom";
 import { loginService } from "../services/loginService";
 import { useState } from "react";
+import { useAuth } from "../store/AuthContext";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // 🔥 global store
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -12,7 +14,6 @@ const Login = () => {
 
   const [error, setError] = useState("");
 
-  // handle input change
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
@@ -22,19 +23,12 @@ const Login = () => {
     }));
   };
 
-  // handle submit
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault(); // ❗ stop page refresh
+    e.preventDefault();
 
     try {
       const response = await loginService(loginData);
-
-      // store tenantId from API
-      localStorage.setItem("tenantId", response.tenantId);
-      localStorage.setItem("token", JSON.stringify(response.token))
-      // // optional
-      localStorage.setItem("user", JSON.stringify(response.user));
-      localStorage.setItem("org", JSON.stringify(response.org));
+      login(response.token);
 
       navigate("/dashboard");
     } catch (err: any) {
@@ -48,9 +42,7 @@ const Login = () => {
         Welcome Back to Login Page
       </h2>
 
-      {error && (
-        <p className="text-red-500 text-center mb-4">{error}</p>
-      )}
+      {error && <p className="text-red-500 text-center mb-4">{error}</p>}
 
       <form className="space-y-4" onSubmit={handleLogin}>
         <div>
@@ -81,10 +73,9 @@ const Login = () => {
             onChange={handleChange}
             className="w-full border border-gray-300 rounded-md px-3 py-2"
             placeholder="Enter your password"
-            required
-          />
-        </div>
-
+          required
+        />
+  </div>
         <button
           type="submit"
           className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600"

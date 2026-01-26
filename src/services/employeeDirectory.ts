@@ -23,3 +23,4 @@ export const getAllEmployees = async (page:number,limit:number,search:string) =>
         
     }
 };
+

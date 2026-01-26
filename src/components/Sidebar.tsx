@@ -1,18 +1,25 @@
 import { List, ListItem, ListItemButton, ListItemText } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../store/AuthContext";
 
 export const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { user } = useAuth();
+  
   const menu = [
     { name: "Dashboard", path: "/dashboard" },
-    {name : "Organization Directory" , path:"/org-directory"},
-    {name : "org Tree" , path:"/org-tree"},
-    { name: "job portal", path: "/job-portal" },
+    { name: "Organization Directory", path: "/org-directory" },
+    ...(user?.user.username !== "superadmin"
+      ? [{ name: "Org Tree", path: "/org-tree" }]
+      : []),
+    ...(user?.user.username !== "superadmin"
+      ? [{ name: "Job Portal", path: "/job-portal" }]
+      : []),
+  
     { name: "Setting", path: "/setting" },
   ];
-
+  
   return (
     <List
       sx={{

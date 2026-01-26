@@ -1,19 +1,24 @@
 import axios from "axios";
 import endpoints from "../../endpoints";
 
+const BASE_URL = "http://localhost:3000/api";
 
-const BASE_URL = 'http://localhost:3000/api';
+export const getOrgDetails = async () => {
+  try {
+    const url = `${BASE_URL}${endpoints.organizationwithuser}`;
+    console.log("URL:", url);
 
-export const getOrgDetails = async (tenantId: string,)=>{
-    try {
-        console.log("URL : " , `${BASE_URL}/${tenantId}${endpoints.getAllJobs}`)
-          const response = await axios.get(`${BASE_URL}/${tenantId}${endpoints.getAllJobs}`);
-          return {
-            jobs: response.data.data,
-            pagination: response.data.pagination,
-          };
-        } catch (error: any) {
-          console.error("Fetch Error:", error.response?.data || error.message);
-          throw error;
-        }
-}
+    const response = await axios.get(url);
+    console.log(response)
+    return {
+      orgs: response.data.data,
+      pagination: response.data.pagination ?? null,
+    };
+  } catch (error: any) {
+    console.error(
+      "Fetch Org Error:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};

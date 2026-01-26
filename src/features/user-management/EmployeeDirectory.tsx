@@ -6,6 +6,7 @@ import { DynamicTable, type Column } from "../../components/DynamicTable";
 import CustomPagination from "../../components/sharedComponents/Pagination";
 import AssignReportingManagerDialog from "../../components/AssignReportingManagerDialog";
 import CreateOrgDialog from "../../components/CreateOrgDialog";
+import { useAuth } from "../../store/AuthContext";
 interface Employee {
   id: string | number;
   name: string;
@@ -15,7 +16,7 @@ interface Employee {
 
 const EmployeeDirectory = () => {
   const [opendialogManager, setOpendialogManager] = useState<boolean>(false);
-
+  const { user } = useAuth();
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [tableData, setTableData] = useState<Employee[]>([]);
   const [selectedRow, setSelectedRow] = useState<Employee | null>(null);
@@ -75,43 +76,48 @@ const EmployeeDirectory = () => {
     console.log("Manager Assigned:", data);
     setOpendialogManager(false); // Success ke baad dialog close karein
   };
- 
+
   const [openOrgDialog, setOpenOrgDialog] = useState(false);
 
-const creatOrgUser = () => {
-  setOpenOrgDialog(true);
-};
-const handleCreateOrg = (data: { org: any; user: any }) => {
-  console.log("Org Data:", data);
-  // Call your API here
-  // await createOrganization(data);
-  setOpenOrgDialog(false);
-};
+  const creatOrgUser = () => {
+    setOpenOrgDialog(true);
+  };
+  const handleCreateOrg = (data: { org: any; user: any }) => {
+    console.log("Org Data:", data);
+    setOpenOrgDialog(false);
+  };
   return (
     <>
       <div className='employee-container'>
         <div className='header flex gap-4 justify-end'>
-        <Button
-            variant='outlined'
-            className='outline'
-            onClick={() => creatOrgUser()}
-          >
-           Add Org
-          </Button>
-          <Button
-            variant='outlined'
-            className='outline'
-            onClick={() => handleManagerDialogOpen(true)}
-          >
-            Add Reporting Manager
-          </Button>
-          <Button
-            variant='contained'
-            sx={{ bgcolor: "#10B981", "&:hover": { bgcolor: "#059669" } }}
-            onClick={() => setOpen(true)}
-          >
-            Add Employee
-          </Button>
+          {user?.user.username === "superadmin" && (
+            <Button
+              variant='outlined'
+              className='outline'
+              onClick={creatOrgUser}
+            >
+              Add Org
+            </Button>
+          )}
+          {user?.user.username !== "superadmin" && (
+            <>
+              <Button
+                variant='outlined'
+                className='outline'
+                onClick={() => handleManagerDialogOpen(true)}
+              >
+                Add Reporting Manager
+              </Button>
+
+              <Button
+                variant='contained'
+                sx={{ bgcolor: "#10B981", "&:hover": { bgcolor: "#059669" } }}
+                onClick={() => setOpen(true)}
+              >
+                Add Employee
+              </Button>
+            </>
+          )}
         </div>
         {tableData.length > 0 ? (
           <div className=''>
@@ -169,10 +175,10 @@ const handleCreateOrg = (data: { org: any; user: any }) => {
         </>
       </DynamicDialog>
       <CreateOrgDialog
-      open={openOrgDialog}
-      onClose={() => setOpenOrgDialog(false)}
-      onSubmit={handleCreateOrg}
-    />
+        open={openOrgDialog}
+        onClose={() => setOpenOrgDialog(false)}
+        onSubmit={handleCreateOrg}
+      />
       <AssignReportingManagerDialog
         open={opendialogManager}
         onClose={() => setOpendialogManager(false)}
