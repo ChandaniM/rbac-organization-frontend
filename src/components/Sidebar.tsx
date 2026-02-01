@@ -5,15 +5,15 @@ import { useAuth } from "../store/AuthContext";
 export const Sidebar = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const { isSystemAdmin , isOrgAdmin , token , username } = useAuth();
   
   const menu = [
     { name: "Dashboard", path: "/dashboard" },
     { name: "Organization Directory", path: "/org-directory" },
-    ...(user?.user.username !== "superadmin"
+    ...(username !== "SYSTEM_ADMIN"
       ? [{ name: "Org Tree", path: "/org-tree" }]
       : []),
-    ...(user?.user.username !== "superadmin"
+    ...(username  !== "SYSTEM_ADMIN"
       ? [{ name: "Job Portal", path: "/job-portal" }]
       : []),
   

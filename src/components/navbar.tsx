@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../store/AuthContext";
 
 const Navbar = () => {
-  const { user, logout } = useAuth();
+  const { username,orgName,email, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -31,17 +31,17 @@ const Navbar = () => {
         >
           {/* Org name */}
           <Typography variant="h6" fontWeight="bold">
-            {user?.org.display_name || user?.org.name}
+            {orgName}
           </Typography>
 
           {/* Profile section */}
           <Stack direction="row" spacing={2} alignItems="center">
             <Box textAlign="right">
               <Typography variant="body2" fontWeight="bold">
-                {user?.user.username}
+                {username}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user?.user.email}
+                {email}
               </Typography>
             </Box>
             <Avatar src="https://i.pravatar.cc/150?u=dipak" />

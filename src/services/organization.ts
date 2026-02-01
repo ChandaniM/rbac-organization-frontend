@@ -22,3 +22,53 @@ export const getOrgDetails = async () => {
     throw error;
   }
 };
+
+export const createOrg = async (
+  authToken : any ,
+  details: {
+  org: {
+    name: string;
+    display_name?: string;
+    description?: string;
+    status?: string;
+    created_by?: string;
+  };
+  user: {
+    email: string;
+    username: string;
+    password: string;
+  };
+}) => {
+  try {
+    const url = `${BASE_URL}${endpoints.organizationwithuser}`;
+    console.log("Create Org URL:", url);
+    console.log("Payload:", details);
+
+    const response = await axios.post(url, details, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authToken}`,
+      },
+    });
+
+    return response.data; // { success, data, message }
+  } catch (error: any) {
+    console.error(
+      "Create Org Error:",
+      error.response?.data || error.message
+    );
+    throw error;
+  }
+};
+
+export const getAllOrganizations = async (token: any) => {
+  const url = `${BASE_URL}${endpoints.organizationData}`;
+
+  const response = await axios.get(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data.data; 
+};
