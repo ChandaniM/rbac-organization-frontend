@@ -16,6 +16,7 @@ interface User {
     name: string;
     designation?: string;
     role?: string;
+    [key: string]: any;
 }
 
 interface AssignReportingManagerDialogProps {

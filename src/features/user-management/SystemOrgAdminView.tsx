@@ -18,7 +18,7 @@ export interface Organization {
   description?: string; // Added for edit completeness
 }
 
-const OrgAdminView = () => {
+const SystemOrgAdminView = () => {
   const { token } = useAuth();
 
   const [openOrgDialog, setOpenOrgDialog] = useState(false);
@@ -161,4 +161,4 @@ const OrgAdminView = () => {
   );
 };
 
-export default OrgAdminView;
+export default SystemOrgAdminView;

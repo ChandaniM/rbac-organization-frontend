@@ -22,9 +22,7 @@ interface Job {
 }
 
 const JobPortalFeature = () => {
-  const { user: authUser, token, logout } = useAuth();
-// tenantId comes from JWT payload
-const tenantId = authUser?.tenantId;
+  const {token , tenantId , logout} = useAuth();
   const [open, setOpen] = useState(false);
   const [jobData, setJobData] = useState<Job[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
