@@ -1082,7 +1082,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
     try {
       setIsUploading(true);
       for (const file of Array.from(files)) {
-        await StorageService.uploadDocument(file, tenantId, role , token);
+        await StorageService.uploadDocument(file, tenantId, role, token);
       }
       await loadDocuments();
     } catch {
@@ -1096,7 +1096,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
       alert("Authentication context missing. Please re-login.");
       return;
     }
-  
+
     try {
       const url = await StorageService.downloadDocument(
         tenantId,
@@ -1104,38 +1104,38 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
         doc.key,
         token
       );
-  
+
       window.open(url, "_blank");
     } catch (error) {
       console.error("Download failed", error);
       alert("Failed to download file");
     }
   };
-  
 
   const handleDelete = async (doc: S3Document) => {
     if (!tenantId || !role || !token) {
       alert("Authentication context missing.");
       return;
     }
-  
+
     const confirmed = window.confirm(
       `Are you sure you want to delete "${doc.name}"?`
     );
     if (!confirmed) return;
-  
-    try {
-     await StorageService.deleteDocument(tenantId, role, doc.key, token);
 
-      setDocuments((prev) =>
-        prev.filter((d:any) => d.key !== doc.key)
-      );
+    try {
+      await StorageService.deleteDocument(tenantId, role, doc.key, token);
+
+      setDocuments((prev) => prev.filter((d: any) => d.key !== doc.key));
     } catch (error) {
       console.error("Delete failed", error);
       alert("Failed to delete file");
     }
   };
-  
+  const handleAddAnnouncement = ()=>{
+    console.log("Announcement");
+    
+  }
   /* ------------------ RENDER ------------------ */
   return (
     <Box sx={{ minHeight: "100vh" }}>
@@ -1302,7 +1302,10 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
                 </Stack>
               </Stack>
 
-              <div className="grid gap-[32px]" style={{gridTemplateColumns:"auto auto auto"}}>
+              <div
+                className='grid gap-[32px]'
+                style={{ gridTemplateColumns: "auto auto auto" }}
+              >
                 {filteredEmployees.length ? (
                   filteredEmployees.map((emp) => (
                     <Grid item xs={12} sm={6} lg={4} xl={3} key={emp.id}>
@@ -1483,15 +1486,19 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
 
         {/* ANNOUNCEMENTS TAB */}
         {tabIndex === 2 && (
-          <Fade in={tabIndex === 2} timeout={400}>
-            <Grid container spacing={3}>
-              {dummyAnnouncements.map((a) => (
-                <Grid item xs={12} md={6} key={a.id}>
-                  <AnnouncementCard {...a} />
-                </Grid>
-              ))}
-            </Grid>
-          </Fade>
+          <>
+            {isAdmin && <button type="button" onClick={handleAddAnnouncement}>Add Announcement</button>}
+
+            <Fade in={tabIndex === 2} timeout={400}>
+              <Grid container spacing={3}>
+                {dummyAnnouncements.map((a) => (
+                  <Grid item xs={12} md={6} key={a.id}>
+                    <AnnouncementCard {...a} />
+                  </Grid>
+                ))}
+              </Grid>
+            </Fade>
+          </>
         )}
       </Container>
 
