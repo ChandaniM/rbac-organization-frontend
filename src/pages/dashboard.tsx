@@ -1,6 +1,7 @@
 import Layout from "../layouts/Layout";
 import { Typography, Box } from "@mui/material";
 import { useState } from "react";
+import DashboardMain from "../features/dashboard/dashboard";
 
 const Dashboard = () => {
     const [pagination, setPagination] = useState({
@@ -17,7 +18,7 @@ const Dashboard = () => {
       <Box mb={4}>
         <Typography variant="h4" fontWeight="700">Dashboard Management</Typography>
         <div>
-          
+          <DashboardMain/>
         </div>
       </Box>
     </Layout>
