@@ -1,5 +1,7 @@
-import { createBrowserRouter, redirect } from "react-router-dom";
-import ProtectedRoute from "./ProtectedRoute";
+import { createBrowserRouter, redirect } from 'react-router-dom';
+import ProtectedRoute from './ProtectedRoute';
+import DashboardRoleGuard from '../components/DashboardRoleGuard';
+
 const router = createBrowserRouter([
   {
     path: "/",
@@ -9,50 +11,53 @@ const router = createBrowserRouter([
     element: <ProtectedRoute />,
     children: [
       {
-        path: "/dashboard",
-        lazy: async () => {
-          const Dashboard = (await import("../pages/dashboard")).default;
-          return { Component: Dashboard };
-        },
+        element: <DashboardRoleGuard />,
+        children: [
+          {
+            path: '/dashboard',
+            lazy: async () => {
+              const Dashboard = (await import('../pages/Dashboard')).default;
+              return { Component: Dashboard };
+            },
+          },
+        ],
       },
       {
-        path: "/org-directory",
+        path: '/org-directory',
         lazy: async () => {
-          const UserManagement = (await import("../pages/UserManagement"))
+          const UserManagement = (await import('../pages/UserManagement'))
             .default;
           return { Component: UserManagement };
         },
       },
       {
-        path: "/org-tree",
+        path: '/org-tree',
         lazy: async () => {
-          const OrganizationTree = (await import("../pages/OrganizationTree"))
+          const OrganizationTree = (await import('../pages/OrganizationTree'))
             .default;
           return { Component: OrganizationTree };
         },
       },
       {
-        path: "/job-portal",
+        path: '/job-portal',
         lazy: async () => {
-          const JobPortal = (await import("../pages/JobPortal"))
-            .default;
+          const JobPortal = (await import('../pages/JobPortal')).default;
           return { Component: JobPortal };
         },
       },
       {
-        path: "/setting",
+        path: '/setting',
         lazy: async () => {
-          const setting = (await import("../pages/setting"))
-            .default;
+          const setting = (await import('../pages/setting')).default;
           return { Component: setting };
         },
       },
     ],
   },
   {
-    path: "/auth/:type",
+    path: '/auth/:type',
     lazy: async () => {
-      const AuthPage = (await import("../pages/auth")).default;
+      const AuthPage = (await import('../pages/auth')).default;
       return { Component: AuthPage };
     },
   },

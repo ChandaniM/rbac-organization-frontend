@@ -3,7 +3,8 @@ const endpoints = {
     addNewJob:'/add',
     login : '/login',
     organizationwithuser : '/organizationwithuser',
-    organizationData:"/getAllOrg"
+    organizationData:"/getAllOrg",
+    dashboard:"/dashboard"
   };
   
   export default endpoints;
