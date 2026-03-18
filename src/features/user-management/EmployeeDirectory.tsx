@@ -238,7 +238,7 @@ import { useAuth } from "../../store/AuthContext";
 import SystemOrgAdminView from "./SystemOrgAdminView";
 import EmployeeView from "./EmployeeView";
 const EmployeeDirectory = () => {
-  const { isSystemAdmin, isOrgAdmin, isEmployee , tenantId , role , token } = useAuth();
+  const { isSystemAdmin, isOrgAdmin } = useAuth();
 
   if (isSystemAdmin) return <SystemOrgAdminView />;
   if (isOrgAdmin) return <EmployeeView isAdmin={isOrgAdmin} />;

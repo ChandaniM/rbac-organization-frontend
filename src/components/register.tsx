@@ -16,7 +16,7 @@ export default function Register() {
     },
   });
 
-  const handleChange = (section, field, value) => {
+  const handleChange = (section: "org" | "user", field: string, value: string) => {
     setForm((prev:any) => ({
       ...prev,
       [section]: {

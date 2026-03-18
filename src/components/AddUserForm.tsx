@@ -20,6 +20,15 @@ type AddUserFormProps = {
     email?: string;
     is_active?: boolean;
     role_id?: string | number;
+    password?: string;
+
+    // Optional profile fields (for better display in directory)
+    job_title?: string;
+    department?: string;
+    location?: string;
+    phone?: string;
+    business_unit?: string;
+    avatar?: string;
   };
 };
 
@@ -28,12 +37,22 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
   onClose,
   defaultValues,
 }) => {
+  const isEditMode = !!defaultValues;
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
     is_active: true,
     role_id: "",
     sendInvite: true,
+    password: "",
+
+    job_title: "",
+    department: "",
+    location: "",
+    phone: "",
+    business_unit: "",
+    avatar: "",
   });
 
   /** 🔁 Prefill form in Edit mode */
@@ -52,7 +71,12 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]:
+        type === "checkbox"
+          ? checked
+          : name === "is_active"
+            ? value === "true"
+            : value,
     }));
   };
 
@@ -84,23 +108,33 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
           required
         />
 
+        <TextField
+          label={isEditMode ? "Password (optional)" : "Password"}
+          name='password'
+          type='password'
+          value={formData.password}
+          onChange={handleChange}
+          fullWidth
+          required={!isEditMode}
+        />
+
         {/* Status */}
         <FormControl fullWidth>
           <InputLabel>Status</InputLabel>
           <Select
-  name='is_active'
-  value={String(formData.is_active)}
-  label='Status'
-  onChange={handleChange}
->
-  <MenuItem value='true'>Active</MenuItem>
-  <MenuItem value='false'>Inactive</MenuItem>
-</Select>
+            name='is_active'
+            value={String(formData.is_active)}
+            label='Status'
+            onChange={handleChange}
+          >
+            <MenuItem value='true'>Active</MenuItem>
+            <MenuItem value='false'>Inactive</MenuItem>
+          </Select>
 
         </FormControl>
 
         {/* Role */}
-        <FormControl fullWidth required>
+        <FormControl fullWidth required={false}>
           <InputLabel>Role</InputLabel>
           <Select
             name='role_id'
@@ -114,6 +148,50 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
             <MenuItem value='EMPLOYEE'>Employee</MenuItem>
           </Select>
         </FormControl>
+
+        {/* Extra fields */}
+        <TextField
+          label='Job Title'
+          name='job_title'
+          value={formData.job_title}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label='Department'
+          name='department'
+          value={formData.department}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label='Location'
+          name='location'
+          value={formData.location}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label='Phone'
+          name='phone'
+          value={formData.phone}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label='Business Unit'
+          name='business_unit'
+          value={formData.business_unit}
+          onChange={handleChange}
+          fullWidth
+        />
+        <TextField
+          label='Avatar URL'
+          name='avatar'
+          value={formData.avatar}
+          onChange={handleChange}
+          fullWidth
+        />
 
         {/* Invite */}
         <FormControlLabel

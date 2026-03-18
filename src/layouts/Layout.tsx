@@ -1,32 +1,15 @@
-import { Box} from "@mui/material";
+import { Box } from "@mui/material";
 import { Sidebar } from "../components/Sidebar";
 import Navbar from "../components/navbar";
-import { useEffect, useState } from "react";
-import type { IOrg, IUser, IUserDetailsState } from "../types/auth.types";
+// no layout-level user state needed (Navbar reads from AuthContext)
 
 const  Layout = ({ children }: { children: React.ReactNode }) => {
-  const [UserDetails, setUserDetails] = useState<IUserDetailsState>({
-    org: {} as IOrg,
-    user: {} as IUser,
-  });
-  
-  useEffect(() => {
-    const org = localStorage.getItem("org");
-    const userDetails = localStorage.getItem("user");
-  
-    setUserDetails({
-      org: org ? JSON.parse(org) : {},
-      user: userDetails ? JSON.parse(userDetails) : {},
-    });
-  }, []);
-  
-  
   return (
     <Box display='flex' height='100vh'>
       <Sidebar />
 
       <Box flex={1} display='flex' flexDirection='column'>
-        <Navbar UserDetails={UserDetails} setUserDetails={setUserDetails} />
+        <Navbar />
         <Box
           component='main'
           p={3}

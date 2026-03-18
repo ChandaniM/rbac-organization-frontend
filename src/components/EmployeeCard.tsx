@@ -68,16 +68,27 @@
 // };
 
 // export default EmployeeCard;
-import { Card, CardContent, Avatar, Typography, Stack, Divider, Box, IconButton } from "@mui/material";
+import { Card, CardContent, Avatar, Typography, Stack, Divider, Box, IconButton, Tooltip } from "@mui/material";
 import { 
   MailOutline, 
   PhoneAndroid, 
   LocationOnOutlined, 
   BusinessCenterOutlined,
-  MoreVert 
+  EditOutlined,
+  DeleteOutline
 } from "@mui/icons-material";
 
-const EmployeeCard = ({ employee }: { employee: any }) => {
+const EmployeeCard = ({
+  employee,
+  canManage = false,
+  onEdit,
+  onDelete,
+}: {
+  employee: any;
+  canManage?: boolean;
+  onEdit?: () => void;
+  onDelete?: () => void;
+}) => {
   return (
     <Card 
       elevation={0} 
@@ -111,7 +122,20 @@ const EmployeeCard = ({ employee }: { employee: any }) => {
               </Typography>
             </Box>
           </Stack>
-          <IconButton size="small"><MoreVert fontSize="small" /></IconButton>
+          {canManage ? (
+            <Stack direction="row" spacing={0.5}>
+              <Tooltip title="Edit">
+                <IconButton size="small" onClick={onEdit} aria-label="Edit employee">
+                  <EditOutlined fontSize="small" />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title="Delete">
+                <IconButton size="small" color="error" onClick={onDelete} aria-label="Delete employee">
+                  <DeleteOutline fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </Stack>
+          ) : null}
         </Stack>
 
         <Divider sx={{ my: 2, borderStyle: 'dashed' }} />

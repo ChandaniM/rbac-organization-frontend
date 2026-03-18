@@ -1,12 +1,12 @@
-import { useState, useMemo, useEffect } from "react";
-import {  Add,  Edit, DeleteOutline, CalendarMonth,   Campaign  } from '@mui/icons-material';
-import { Box, Tabs, Tab, TextField, InputAdornment, Button, Typography,  Stack, Container, Chip, Card, Paper, Grid,  Divider, Fade, Avatar, CardActionArea, LinearProgress,  MenuItem,
+import { useState, useEffect } from "react";
+import { Add } from '@mui/icons-material';
+import { Box, Tabs, Tab, TextField, InputAdornment, Button, Typography,  Stack, Container, Chip, Card, Paper, Grid,  Fade, Avatar, LinearProgress,  MenuItem,
 } from "@mui/material";
 import {  
   Search as SearchIcon, Add as AddIcon,  SupervisorAccountOutlined as ManagerIcon,
   GroupsOutlined as GroupsIcon, DescriptionOutlined as DocIcon, CampaignOutlined as AnnouncementIcon,  SentimentDissatisfiedOutlined as NoDataIcon,
   PictureAsPdfOutlined as PdfIcon,  CloudUploadOutlined as UploadIcon,
-  InsertDriveFileOutlined as FileIcon, FilterList as FilterIcon,
+  InsertDriveFileOutlined as FileIcon,
 } from "@mui/icons-material";
 import IconButton from "@mui/material/IconButton";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
@@ -24,12 +24,19 @@ import type { S3Document } from "../../services/storage.service";
 import { StorageService } from "../../services/storage.service";
 import { useAuth } from "../../store/AuthContext";
 import AddAnnouncementForm from "../../components/AddAnnouncementForm";
+import { assignReportingManager } from "../../services/orgHierarchy";
+import {
+  createUser,
+  deleteUser,
+  getUsersByTenant,
+  updateUser,
+} from "../../services/employeeDirectory";
 
 interface Announcement {
     id?: string,
     title: string,
     description: string,
-    date: string,
+    date?: string,
 }
 
 interface EmployeeViewProps {
@@ -47,72 +54,21 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
   const [documents, setDocuments] = useState<S3Document[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [openAddAnnouncement, setOpenAddAnnouncement] = useState(false);
-  const [dataAnnouncements , setdataAnnouncements] = useState<Array<Announcement>>([]);
-  const [selectedAnnouncement , setselectedAnnouncement] = useState<Announcement>();
-  /* ------------------ MOCK DATA (Unchanged) ------------------ */
-  const dummyEmployees = [
-    {
-      id: "1",
-      name: "Abhijeet Habe",
-      jobTitle: "Associate Software Engineer",
-      department: "Software Engineering",
-      location: "Mumbai",
-      email: "abhijeet.habe@company.com",
-      phone: "+91 98765 43210",
-      businessUnit: "Product Engineering",
-      avatar: "",
-    },
-    {
-      id: "2",
-      name: "Sneha Patil",
-      jobTitle: "HR Executive",
-      department: "Human Resources",
-      location: "Pune",
-      email: "sneha.patil@company.com",
-      phone: "+91 91234 56789",
-      businessUnit: "Corporate HR",
-      avatar: "",
-    },
-    {
-      id: "3",
-      name: "Rahul Sharma",
-      jobTitle: "Senior Software Engineer",
-      department: "Software Engineering",
-      location: "Bangalore",
-      email: "rahul.sharma@company.com",
-      phone: "+91 99887 66554",
-      businessUnit: "Platform Engineering",
-      avatar: "",
-    },
-    {
-      id: "4",
-      name: "Neha Verma",
-      jobTitle: "Product Manager",
-      department: "Product",
-      location: "Remote",
-      email: "neha.verma@company.com",
-      phone: "+91 90909 80808",
-      businessUnit: "Product Management",
-      avatar: "",
-    },
-    {
-      id: "5",
-      name: "Amit Kulkarni",
-      jobTitle: "QA Engineer",
-      department: "Quality Assurance",
-      location: "Mumbai",
-      email: "amit.kulkarni@company.com",
-      phone: "+91 97654 32109",
-      businessUnit: "Engineering",
-      avatar: "",
-    },
-  ];
+  const [dataAnnouncements] = useState<Array<Announcement>>([]);
+  const [selectedAnnouncement] = useState<Announcement>();
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [loadingEmployees, setLoadingEmployees] = useState(false);
+  const [page] = useState(1);
+  const [limit] = useState(12);
+  const [openEditUser, setOpenEditUser] = useState(false);
+  const [selectedEmployee, setSelectedEmployee] = useState<any | null>(null);
 
 
 
   /* ------------------ API / LOGIC (Unchanged) ------------------ */
   const loadDocuments = async () => {
     try {
+      if (!tenantId || !role || !token) return;
       const data = await StorageService.getDocuments(tenantId, role, token);
       setDocuments(data);
     } catch (err) {
@@ -124,13 +80,89 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
     if (tabIndex === 1) loadDocuments();
   }, [tabIndex]);
 
-  const filteredEmployees = useMemo(() => {
-    return dummyEmployees.filter(
-      (emp) =>
-        emp.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        emp.jobTitle.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [searchQuery]);
+  const fetchEmployees = async () => {
+    if (!tenantId) return;
+    try {
+      setLoadingEmployees(true);
+      const response = await getUsersByTenant(tenantId, page, limit, searchQuery);
+      setEmployees(response.users);
+    } catch (error) {
+      console.error("Failed to fetch employees", error);
+    } finally {
+      setLoadingEmployees(false);
+    }
+  };
+
+  useEffect(() => {
+    if (tabIndex === 0) fetchEmployees();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tabIndex, tenantId, page, searchQuery]);
+
+  const handleCreateEmployee = async (data: any) => {
+    if (!tenantId) return;
+    try {
+      await createUser(tenantId, {
+        username: data.username,
+        email: data.email,
+        password: data.password,
+        is_active: data.is_active,
+        job_title: data.job_title,
+        department: data.department,
+        location: data.location,
+        phone: data.phone,
+        business_unit: data.business_unit,
+        avatar: data.avatar,
+      });
+      setOpenAddUser(false);
+      await fetchEmployees();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to create employee");
+    }
+  };
+
+  const handleOpenEditEmployee = (emp: any) => {
+    setSelectedEmployee(emp);
+    setOpenEditUser(true);
+  };
+
+  const handleUpdateEmployee = async (data: any) => {
+    if (!tenantId || !selectedEmployee?.id) return;
+    try {
+      const payload: any = {
+        username: data.username,
+        email: data.email,
+        is_active: data.is_active,
+        job_title: data.job_title,
+        department: data.department,
+        location: data.location,
+        phone: data.phone,
+        business_unit: data.business_unit,
+        avatar: data.avatar,
+      };
+      if (data.password && String(data.password).trim() !== "") {
+        payload.password = data.password;
+      }
+
+      await updateUser(tenantId, selectedEmployee.id, payload);
+      setOpenEditUser(false);
+      setSelectedEmployee(null);
+      await fetchEmployees();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to update employee");
+    }
+  };
+
+  const handleDeleteEmployee = async (emp: any) => {
+    if (!tenantId || !emp?.id) return;
+    const confirmed = window.confirm(`Delete employee "${emp.name}"?`);
+    if (!confirmed) return;
+    try {
+      await deleteUser(tenantId, emp.id);
+      await fetchEmployees();
+    } catch (err: any) {
+      alert(err?.response?.data?.message || err?.message || "Failed to delete employee");
+    }
+  };
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -146,6 +178,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
   };
 
   const uploadFiles = async (files: FileList) => {
+    if (!tenantId || !role || !token) return;
     try {
       setIsUploading(true);
       for (const file of Array.from(files)) {
@@ -165,14 +198,12 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
     }
 
     try {
-      const url = await StorageService.downloadDocument(
+      await StorageService.downloadDocument(
         tenantId,
         role,
         doc.key,
         token
       );
-
-      window.open(url, "_blank");
     } catch (error) {
       console.error("Download failed", error);
       alert("Failed to download file");
@@ -199,12 +230,14 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
       alert("Failed to delete file");
     }
   };
-  const handleEditAnnouncement = (id: string | number) => {
+  const handleEditAnnouncement = (id?: string | number) => {
+    if (id === undefined || id === null) return;
     console.log("Edit announcement with ID:", id);
     // Future: setEditData(announcement); setOpenModal(true);
   };
   
-  const handleDeleteAnnouncement = (id: string | number) => {
+  const handleDeleteAnnouncement = (id?: string | number) => {
+    if (id === undefined || id === null) return;
     const confirmed = window.confirm("Are you sure you want to delete this announcement?");
     if (confirmed) {
       console.log("Deleting announcement with ID:", id);
@@ -218,7 +251,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
     
   }
 
-  const handleAnnouncementSubmit = (data:Announcement)=>{
+  const handleAnnouncementSubmit = (data: any)=>{
     console.log(data , "lol its new handleAnnouncementSubmit")
     setOpenAddAnnouncement(false)
   }
@@ -258,7 +291,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
                   component='span'
                   sx={{ fontWeight: 700, color: "primary.main" }}
                 >
-                  {dummyEmployees.length}
+                  {employees.length}
                 </Box>{" "}
                 team members in your directory.
               </Typography>
@@ -392,14 +425,21 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
                 className='grid gap-[32px]'
                 style={{ gridTemplateColumns: "auto auto auto" }}
               >
-                {filteredEmployees.length ? (
-                  filteredEmployees.map((emp) => (
-                    <Grid item xs={12} sm={6} lg={4} xl={3} key={emp.id}>
-                      <EmployeeCard employee={emp} />
-                    </Grid>
+                {loadingEmployees ? (
+                  <Typography>Loading employees...</Typography>
+                ) : employees.length ? (
+                  employees.map((emp) => (
+                    <Box key={emp.id}>
+                      <EmployeeCard
+                        employee={emp}
+                        canManage={isAdmin}
+                        onEdit={() => handleOpenEditEmployee(emp)}
+                        onDelete={() => handleDeleteEmployee(emp)}
+                      />
+                    </Box>
                   ))
                 ) : (
-                  <Grid item xs={12}>
+                  <Box>
                     <Stack
                       alignItems='center'
                       justifyContent='center'
@@ -411,7 +451,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
                         No employees found matching your search
                       </Typography>
                     </Stack>
-                  </Grid>
+                  </Box>
                 )}
               </div>
             </Box>
@@ -475,7 +515,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
 
               <Grid container spacing={2}>
                 {documents.map((doc) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={doc.id}>
+                  <Box key={doc.id}>
                     <Card
                       variant='outlined'
                       sx={{
@@ -563,7 +603,7 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
                         </div>
                       </div>
                     </Card>
-                  </Grid>
+                  </Box>
                 ))}
               </Grid>
             </Box>
@@ -622,14 +662,14 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
       )}
 
         {dataAnnouncements.length > 0 && dataAnnouncements.map((a) => (
-          <Grid item xs={12} md={6} key={a.id}>
+          <Box key={a.id}>
             <AnnouncementCard 
                {...a} 
                isAdmin={isAdmin} 
                onEdit={() => handleEditAnnouncement(a.id)}
                onDelete={() => handleDeleteAnnouncement(a.id)}
             />
-          </Grid>
+          </Box>
         ))}
       </Grid>
 
@@ -648,16 +688,57 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
           >
             <AddUserForm
               onClose={() => setOpenAddUser(false)}
-              onComplete={() => setOpenAddUser(false)}
+              onComplete={handleCreateEmployee}
             />
           </DynamicDialog>
 
           <AssignReportingManagerDialog
             open={openManagerDialog}
             onClose={() => setOpenManagerDialog(false)}
-            users={dummyEmployees}
-            onAssign={() => setOpenManagerDialog(false)}
+            users={employees}
+            onAssign={(employeeId, managerId) => {
+              if (!tenantId || !token) return;
+              assignReportingManager(tenantId, employeeId, managerId, token)
+                .then(() => {
+                  setOpenManagerDialog(false);
+                })
+                .catch((err) => {
+                  alert(
+                    err?.response?.data?.message ||
+                      err?.message ||
+                      "Failed to assign reporting manager"
+                  );
+                });
+            }}
           />
+
+          <DynamicDialog
+            open={openEditUser}
+            onClose={() => {
+              setOpenEditUser(false);
+              setSelectedEmployee(null);
+            }}
+            header={{ title: "Edit Employee" }}
+          >
+            <AddUserForm
+              defaultValues={{
+                username: selectedEmployee?.name,
+                email: selectedEmployee?.email,
+                is_active: selectedEmployee?.isActive,
+                job_title: selectedEmployee?.jobTitle,
+                department: selectedEmployee?.department,
+                location: selectedEmployee?.location,
+                phone: selectedEmployee?.phone,
+                business_unit: selectedEmployee?.businessUnit,
+                avatar: selectedEmployee?.avatar,
+              }}
+              onClose={() => {
+                setOpenEditUser(false);
+                setSelectedEmployee(null);
+              }}
+              onComplete={handleUpdateEmployee}
+            />
+          </DynamicDialog>
         </>
       )}
 

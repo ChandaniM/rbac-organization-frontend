@@ -2,6 +2,13 @@ import styled from "@emotion/styled";
 import { Tree, TreeNode } from "react-organizational-chart";
 import { Avatar, Typography, Box, Paper } from "@mui/material";
 import Layout from "../layouts/Layout";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "../store/AuthContext";
+import type {
+  OrgHierarchyTreeResponse,
+  OrgHierarchyNode,
+} from "../services/orgHierarchy";
+import { getOrgHierarchyTree } from "../services/orgHierarchy";
 
 // 1. Keka-style Node Design
 const StyledNode = styled(Paper)`
@@ -14,57 +21,93 @@ const StyledNode = styled(Paper)`
   background: white;
 `;
 
-// 2. Mock Data with 'managerId'
-const employees = [
-  { id: 1, name: "Dipak Deb Nath", role: "CEO", managerId: null, avatar: "" },
-  { id: 2, name: "Pappu Baidya", role: "CTO", managerId: 1, avatar: "" },
-  {
-    id: 3,
-    name: "Shipon Mohanta",
-    role: "HR Manager",
-    managerId: 1,
-    avatar: "",
-  },
-  { id: 4, name: "John Doe", role: "Lead Dev", managerId: 2, avatar: "" },
-  { id: 5, name: "Jane Smith", role: "QA Engineer", managerId: 2, avatar: "" },
-];
-const rootEmployee = employees.find((emp) => emp.managerId === null);
-
 const OrganizationTree = () => {
-  // 3. The Recursive Function to build the tree
-  const renderTree = (managerId: number | null) => {
-    return employees
-      .filter((emp) => emp.managerId === managerId)
-      .map((emp) => (
-        <TreeNode
-          key={emp.id}
-          label={
-            <StyledNode>
-              <Box
-                display='flex'
-                flexDirection='column'
-                alignItems='center'
-                gap={1}
-              >
-                <Avatar sx={{ width: 40, height: 40, bgcolor: "#3B82F6" }}>
-                  {emp.name.charAt(0)}
-                </Avatar>
-                <Box>
-                  <Typography variant='subtitle2' fontWeight='bold'>
-                    {emp.name}
-                  </Typography>
-                  <Typography variant='caption' color='textSecondary'>
-                    {emp.role}
-                  </Typography>
+  const { tenantId, token } = useAuth();
+  const [tree, setTree] = useState<OrgHierarchyTreeResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!tenantId || !token) return;
+    setLoading(true);
+    getOrgHierarchyTree(tenantId, token)
+      .then((res) => setTree(res))
+      .catch((err) => {
+        console.error("Failed to load org hierarchy", err);
+        setTree(null);
+      })
+      .finally(() => setLoading(false));
+  }, [tenantId, token]);
+
+  const { usersById, childrenByManager, roots } = useMemo(() => {
+    const usersById = new Map<string, OrgHierarchyNode>();
+    const childrenByManager = new Map<string, string[]>();
+
+    const edges = tree?.edges ?? [];
+    const nodes = tree?.users ?? [];
+    nodes.forEach((u) => usersById.set(u.id, u));
+
+    const managerIds = new Set<string>();
+    const userIds = new Set<string>();
+
+    for (const e of edges) {
+      managerIds.add(e.managerId);
+      userIds.add(e.userId);
+
+      if (!childrenByManager.has(e.managerId)) {
+        childrenByManager.set(e.managerId, []);
+      }
+      childrenByManager.get(e.managerId)!.push(e.userId);
+    }
+
+    // Root candidates = users that are never a subordinate (top-most in hierarchy).
+    // This ensures the "first" org user shows up even if there are no edges yet.
+    const rootUsers = nodes.filter((u) => !userIds.has(u.id));
+
+    return { usersById, childrenByManager, roots: rootUsers };
+  }, [tree]);
+
+  const renderTree = (managerId: string, visited: Set<string>) => {
+    if (visited.has(managerId)) return null;
+    const nextVisited = new Set(visited);
+    nextVisited.add(managerId);
+
+    const children = childrenByManager.get(managerId) ?? [];
+    return children
+      .map((childId) => {
+        const child = usersById.get(childId);
+        if (!child) return null;
+
+        return (
+          <TreeNode
+            key={child.id}
+            label={
+              <StyledNode>
+                <Box
+                  display='flex'
+                  flexDirection='column'
+                  alignItems='center'
+                  gap={1}
+                >
+                  <Avatar sx={{ width: 40, height: 40, bgcolor: "#3B82F6" }}>
+                    {(child.name ?? "").charAt(0)}
+                  </Avatar>
+                  <Box>
+                    <Typography variant='subtitle2' fontWeight='bold'>
+                      {child.name}
+                    </Typography>
+                    <Typography variant='caption' color='textSecondary'>
+                      {child.jobTitle || child.department || "Employee"}
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
-            </StyledNode>
-          }
-        >
-          {/* Recursion: Find anyone who reports to this employee */}
-          {renderTree(emp.id)}
-        </TreeNode>
-      ));
+              </StyledNode>
+            }
+          >
+            {renderTree(child.id, nextVisited)}
+          </TreeNode>
+        );
+      })
+      .filter(Boolean);
   };
 
   return (
@@ -75,6 +118,10 @@ const OrganizationTree = () => {
         </Typography>
 
         <Box sx={{ overflowX: "auto", py: 4 }}>
+          {loading && <Typography color='text.secondary'>Loading...</Typography>}
+          {!loading && tree && tree.users.length === 0 && (
+            <Typography color='text.secondary'>No hierarchy found.</Typography>
+          )}
           <Tree
             lineWidth='2px'
             lineColor='#CBD5E1'
@@ -88,21 +135,46 @@ const OrganizationTree = () => {
                   gap={1}
                 >
                   <Avatar sx={{ width: 40, height: 40, bgcolor: "#3B82F6" }}>
-                    {rootEmployee?.name.charAt(0)}
+                    O
                   </Avatar>
                   <Box>
                     <Typography variant='subtitle2' fontWeight='bold'>
-                      {rootEmployee?.name}
+                      Organization
                     </Typography>
                     <Typography variant='caption' color='text.secondary'>
-                      {rootEmployee?.role}
+                      Reporting hierarchy
                     </Typography>
                   </Box>
                 </Box>
               </StyledNode>
             }
           >
-            {renderTree(rootEmployee?.id ?? null)}
+            {tree && (roots.length ? roots : tree.users.slice(0, 1)).map((root) => (
+              <TreeNode key={root.id} label={
+                <StyledNode>
+                  <Box
+                    display='flex'
+                    flexDirection='column'
+                    alignItems='center'
+                    gap={1}
+                  >
+                    <Avatar sx={{ width: 40, height: 40, bgcolor: "#3B82F6" }}>
+                      {(root.name ?? "").charAt(0)}
+                    </Avatar>
+                    <Box>
+                      <Typography variant='subtitle2' fontWeight='bold'>
+                        {root.name}
+                      </Typography>
+                      <Typography variant='caption' color='textSecondary'>
+                        {root.jobTitle || root.department || "Employee"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </StyledNode>
+              }>
+                {renderTree(root.id, new Set<string>())}
+              </TreeNode>
+            ))}
           </Tree>
         </Box>
       </Box>

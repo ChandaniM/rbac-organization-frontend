@@ -22,7 +22,7 @@ interface Job {
 }
 
 const JobPortalFeature = () => {
-  const {token , tenantId , logout} = useAuth();
+  const { tenantId, logout } = useAuth();
   const [open, setOpen] = useState(false);
   const [jobData, setJobData] = useState<Job[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

@@ -1,5 +1,5 @@
-import { Card, CardContent, Typography, Box, Stack, Chip, IconButton, Tooltip } from "@mui/material";
-import { CalendarMonth, Edit, DeleteOutline, MoreVert } from "@mui/icons-material";
+import { Card, CardContent, Typography, Stack, Chip, IconButton, Tooltip } from "@mui/material";
+import { CalendarMonth, Edit, DeleteOutline } from "@mui/icons-material";
 
 interface AnnouncementCardProps {
   title: string;

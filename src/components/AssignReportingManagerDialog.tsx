@@ -12,10 +12,11 @@ import {
 } from "@mui/material";
 
 interface User {
-    id: number;
+    id: string;
     name: string;
     designation?: string;
     role?: string;
+    jobTitle?: string;
     [key: string]: any;
 }
 
@@ -23,7 +24,7 @@ interface AssignReportingManagerDialogProps {
     open: boolean;
     onClose: () => void;
     users: User[];
-    onAssign: (employeeId: number, managerId: number) => void;
+    onAssign: (employeeId: string, managerId: string) => void;
 }
 
 const AssignReportingManagerDialog: React.FC<AssignReportingManagerDialogProps> = ({
@@ -32,17 +33,21 @@ const AssignReportingManagerDialog: React.FC<AssignReportingManagerDialogProps> 
     users,
     onAssign,
 }) => {
-    const [selectedEmployee, setSelectedEmployee] = useState<number | "">("");
-    const [selectedManager, setSelectedManager] = useState<number | "">("");
+    const [selectedEmployee, setSelectedEmployee] = useState<string | "">("");
+    const [selectedManager, setSelectedManager] = useState<string | "">("");
 
-    const reportingManagers = users.filter(
-        (user) => user.role === "Admin" || user.designation === "Manager"
-    );
+    const reportingManagers = users.filter((user) => {
+        const title = (user.jobTitle || user.designation || "").toLowerCase();
+        return title.includes("manager") || title.includes("admin");
+    });
+
+    // Fallback: if we can't detect managers, allow selecting any user as a manager
+    const managerOptions = reportingManagers.length ? reportingManagers : users;
 
     const handleAssign = () => {
         if (!selectedEmployee || !selectedManager) return;
 
-        onAssign(selectedEmployee as number, selectedManager as number);
+        onAssign(selectedEmployee, selectedManager);
 
         setSelectedEmployee("");
         setSelectedManager("");
@@ -51,7 +56,7 @@ const AssignReportingManagerDialog: React.FC<AssignReportingManagerDialogProps> 
 
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>Assign Reporting Manager</DialogTitle>
+            <DialogTitle>Assign / Edit Reporting Manager</DialogTitle>
 
             <DialogContent
                 sx={{
@@ -67,7 +72,7 @@ const AssignReportingManagerDialog: React.FC<AssignReportingManagerDialogProps> 
                     <Select
                         value={selectedEmployee}
                         label="Select Employee"
-                        onChange={(e) => setSelectedEmployee(e.target.value as number)}
+                        onChange={(e) => setSelectedEmployee(String(e.target.value))}
                     >
                         {users.map((emp) => (
                             <MenuItem key={emp.id} value={emp.id}>
@@ -83,11 +88,11 @@ const AssignReportingManagerDialog: React.FC<AssignReportingManagerDialogProps> 
                     <Select
                         value={selectedManager}
                         label="Select Reporting Manager"
-                        onChange={(e) => setSelectedManager(e.target.value as number)}
+                        onChange={(e) => setSelectedManager(String(e.target.value))}
                     >
-                        {reportingManagers.map((mgr) => (
+                        {managerOptions.map((mgr) => (
                             <MenuItem key={mgr.id} value={mgr.id}>
-                                {mgr.name} ({mgr.designation})
+                                {mgr.name} ({mgr.jobTitle || mgr.designation || "Manager"})
                             </MenuItem>
                         ))}
                     </Select>
