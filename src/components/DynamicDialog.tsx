@@ -65,7 +65,7 @@ const DynamicDialog = <T,>({
       <DialogContent dividers>
         {React.cloneElement(children, {
           onClose,
-          onComplete,
+          onComplete: children.props.onComplete ?? onComplete,
         })}
       </DialogContent>
     </Dialog>

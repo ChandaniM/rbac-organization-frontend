@@ -97,6 +97,10 @@ export const getUsersByTenant = async (
 };
 
 export const createUser = async (tenantId: string, payload: any) => {
+  console.log("Creating user with payload:", payload);
+  console.log(`POST ${BASE_URL}/${tenantId}/users`);
+  
+  
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No authentication token found");
 

@@ -1,6 +1,8 @@
 import { createBrowserRouter, redirect } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute';
 import DashboardRoleGuard from '../components/DashboardRoleGuard';
+import RouteErrorFallback from '../components/RouteErrorFallback';
+import Dashboard from '../pages/Dashboard';
 
 const router = createBrowserRouter([
   {
@@ -9,16 +11,14 @@ const router = createBrowserRouter([
   },
   {
     element: <ProtectedRoute />,
+    errorElement: <RouteErrorFallback />,
     children: [
       {
         element: <DashboardRoleGuard />,
         children: [
           {
             path: '/dashboard',
-            lazy: async () => {
-              const Dashboard = (await import('../pages/Dashboard')).default;
-              return { Component: Dashboard };
-            },
+            element: <Dashboard />,
           },
         ],
       },

@@ -99,6 +99,8 @@ const EmployeeView = ({ isAdmin = true }: EmployeeViewProps) => {
   }, [tabIndex, tenantId, page, searchQuery]);
 
   const handleCreateEmployee = async (data: any) => {
+    console.log("Creating employee with data:", data);
+    
     if (!tenantId) return;
     try {
       await createUser(tenantId, {

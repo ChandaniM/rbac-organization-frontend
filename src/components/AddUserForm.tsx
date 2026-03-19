@@ -98,7 +98,6 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    console.log(formData , "61")
     onComplete?.(formData);
   };
 
