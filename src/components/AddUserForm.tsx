@@ -1,16 +1,19 @@
 import {
+  Avatar,
   Box,
   Button,
   Checkbox,
   FormControl,
   FormControlLabel,
+  Grid,
   InputLabel,
   MenuItem,
   Select,
   Stack,
   TextField,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import PersonIcon from "@mui/icons-material/Person";
+import { useEffect, useRef, useState } from "react";
 
 type AddUserFormProps = {
   onComplete?: (data: any) => void;
@@ -65,6 +68,8 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
     }
   }, [defaultValues]);
 
+  const avatarInputRef = useRef<HTMLInputElement>(null);
+
   /** 🧠 Single change handler */
   const handleChange = (e: any) => {
     const { name, value, type, checked } = e.target;
@@ -80,120 +85,167 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
     }));
   };
 
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const dataUrl = reader.result as string;
+      setFormData((prev) => ({ ...prev, avatar: dataUrl }));
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
     console.log(formData , "61")
     onComplete?.(formData);
   };
 
+  const avatarPreview = formData.avatar || null;
+
   return (
     <Box component='form' onSubmit={handleSubmit}>
       <Stack spacing={3}>
-        <TextField
-          label='Username'
-          name='username'
-          value={formData.username}
-          onChange={handleChange}
-          fullWidth
-          required
-        />
+        <Grid container spacing={3}>
+          {/* Left column */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Stack spacing={3}>
+              <TextField
+                label='Username'
+                name='username'
+                value={formData.username}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+              <TextField
+                label='Email Address'
+                name='email'
+                type='email'
+                value={formData.email}
+                onChange={handleChange}
+                fullWidth
+                required
+              />
+              <TextField
+                label={isEditMode ? "Password (optional)" : "Password"}
+                name='password'
+                type='password'
+                value={formData.password}
+                onChange={handleChange}
+                fullWidth
+                required={!isEditMode}
+              />
+              <FormControl fullWidth>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  name='is_active'
+                  value={String(formData.is_active)}
+                  label='Status'
+                  onChange={handleChange}
+                >
+                  <MenuItem value='true'>Active</MenuItem>
+                  <MenuItem value='false'>Inactive</MenuItem>
+                </Select>
+              </FormControl>
+              <FormControl fullWidth required={false}>
+                <InputLabel>Role</InputLabel>
+                <Select
+                  name='role_id'
+                  value={formData.role_id}
+                  label='Role'
+                  onChange={handleChange}
+                >
+                  <MenuItem value=''>Select role</MenuItem>
+                  <MenuItem value='ORG_ADMIN'>Org Admin</MenuItem>
+                  <MenuItem value='MANAGER'>Manager</MenuItem>
+                  <MenuItem value='EMPLOYEE'>Employee</MenuItem>
+                </Select>
+              </FormControl>
+            </Stack>
+          </Grid>
 
-        <TextField
-          label='Email Address'
-          name='email'
-          type='email'
-          value={formData.email}
-          onChange={handleChange}
-          fullWidth
-          required
-        />
+          {/* Right column */}
+          <Grid size={{ xs: 12, md: 6 }}>
+            <Stack spacing={3}>
+              <TextField
+                label='Job Title'
+                name='job_title'
+                value={formData.job_title}
+                onChange={handleChange}
+                fullWidth
+              />
+              <TextField
+                label='Department'
+                name='department'
+                value={formData.department}
+                onChange={handleChange}
+                fullWidth
+              />
+              <TextField
+                label='Location'
+                name='location'
+                value={formData.location}
+                onChange={handleChange}
+                fullWidth
+              />
+              <TextField
+                label='Phone'
+                name='phone'
+                value={formData.phone}
+                onChange={handleChange}
+                fullWidth
+              />
+              <TextField
+                label='Business Unit'
+                name='business_unit'
+                value={formData.business_unit}
+                onChange={handleChange}
+                fullWidth
+              />
 
-        <TextField
-          label={isEditMode ? "Password (optional)" : "Password"}
-          name='password'
-          type='password'
-          value={formData.password}
-          onChange={handleChange}
-          fullWidth
-          required={!isEditMode}
-        />
+              {/* Avatar: file input + small square preview */}
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <input
+                  ref={avatarInputRef}
+                  type='file'
+                  accept='image/*'
+                  onChange={handleAvatarChange}
+                  style={{ display: "none" }}
+                />
+                <Button
+                  variant='outlined'
+                  component='span'
+                  onClick={() => avatarInputRef.current?.click()}
+                  startIcon={<PersonIcon />}
+                >
+                  Upload photo
+                </Button>
+                {avatarPreview && (
+                  <Box
+                    sx={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 1,
+                      overflow: "hidden",
+                      border: "1px solid",
+                      borderColor: "divider",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <Avatar
+                      src={avatarPreview}
+                      sx={{ width: 48, height: 48 }}
+                      variant='rounded'
+                    />
+                  </Box>
+                )}
+              </Box>
+            </Stack>
+          </Grid>
+        </Grid>
 
-        {/* Status */}
-        <FormControl fullWidth>
-          <InputLabel>Status</InputLabel>
-          <Select
-            name='is_active'
-            value={String(formData.is_active)}
-            label='Status'
-            onChange={handleChange}
-          >
-            <MenuItem value='true'>Active</MenuItem>
-            <MenuItem value='false'>Inactive</MenuItem>
-          </Select>
-
-        </FormControl>
-
-        {/* Role */}
-        <FormControl fullWidth required={false}>
-          <InputLabel>Role</InputLabel>
-          <Select
-            name='role_id'
-            value={formData.role_id}
-            label='Role'
-            onChange={handleChange}
-          >
-            <MenuItem value=''>Select role</MenuItem>
-            <MenuItem value='ORG_ADMIN'>Org Admin</MenuItem>
-            <MenuItem value='MANAGER'>Manager</MenuItem>
-            <MenuItem value='EMPLOYEE'>Employee</MenuItem>
-          </Select>
-        </FormControl>
-
-        {/* Extra fields */}
-        <TextField
-          label='Job Title'
-          name='job_title'
-          value={formData.job_title}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label='Department'
-          name='department'
-          value={formData.department}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label='Location'
-          name='location'
-          value={formData.location}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label='Phone'
-          name='phone'
-          value={formData.phone}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label='Business Unit'
-          name='business_unit'
-          value={formData.business_unit}
-          onChange={handleChange}
-          fullWidth
-        />
-        <TextField
-          label='Avatar URL'
-          name='avatar'
-          value={formData.avatar}
-          onChange={handleChange}
-          fullWidth
-        />
-
-        {/* Invite */}
         <FormControlLabel
           control={
             <Checkbox
@@ -205,7 +257,6 @@ const AddUserForm: React.FC<AddUserFormProps> = ({
           label='Send email invitation'
         />
 
-        {/* Actions */}
         <Stack direction='row' spacing={2} justifyContent='flex-end'>
           <Button onClick={onClose}>Cancel</Button>
           <Button type='submit' variant='contained'>
