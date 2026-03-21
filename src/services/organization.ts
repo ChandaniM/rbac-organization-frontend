@@ -72,5 +72,35 @@ export const getAllOrganizations = async (token: any) => {
     },
   });
 
-  return response.data.data; 
+  return response.data.data;
+};
+
+export const updateOrganization = async (
+  token: string,
+  orgId: string,
+  data: Record<string, unknown>
+) => {
+  const response = await axios.put(
+    `${BASE_URL}${endpoints.organization(orgId)}`,
+    data,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const deleteOrganization = async (token: string, orgId: string) => {
+  const response = await axios.delete(
+    `${BASE_URL}${endpoints.organization(orgId)}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
 };
