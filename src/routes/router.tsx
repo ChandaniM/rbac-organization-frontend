@@ -52,6 +52,13 @@ const router = createBrowserRouter([
           return { Component: setting };
         },
       },
+      {
+        path: '/audit-log',
+        lazy: async () => {
+          const AuditLog = (await import('../pages/AuditLog')).default;
+          return { Component: AuditLog };
+        },
+      },
     ],
   },
   {

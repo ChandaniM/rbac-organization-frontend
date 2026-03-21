@@ -3,9 +3,9 @@ import axios from "axios";
 /* ------------------ CONFIG ------------------ */
 
 // Prefer env variable, fallback for local dev
-const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL ??
-  "http://localhost:3000/api/resources";
+
+const BASE_URL = "http://localhost:3000/api";
+
 
 /* ------------------ TYPES ------------------ */
 
@@ -66,7 +66,7 @@ export const StorageService = {
     formData.append("tenantId", tenantId);
     formData.append("role", role);
 
-    await axios.post(`${API_BASE_URL}/upload`, formData, {
+    await axios.post(`${BASE_URL}/upload`, formData, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -81,7 +81,7 @@ export const StorageService = {
     role: string,
     token: string
   ): Promise<S3Document[]> => {
-    const response = await axios.get<S3DocumentRaw[]>(API_BASE_URL, {
+    const response = await axios.get<S3DocumentRaw[]>(BASE_URL, {
       params: { tenantId, role },
       headers: {
         Authorization: `Bearer ${token}`,
@@ -93,7 +93,7 @@ export const StorageService = {
 
   downloadDocument: async (tenantId: string, role: string, key: string , token :any) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/download`, {
+      const response = await axios.get(`${BASE_URL}/download`, {
         params: { tenantId, role, key },
         responseType: "blob", // CRITICAL: Tells Axios to treat response as binary data
         headers: {
@@ -123,7 +123,7 @@ export const StorageService = {
 
   deleteDocument: async (tenantId: string, role: string, key: string , token:any) => {
     try {
-      const response = await axios.delete(`${API_BASE_URL}/delete`, {
+      const response = await axios.delete(`${BASE_URL}/delete`, {
         params: { tenantId, role, key },
         headers: {
           Authorization: `Bearer ${token}`,

@@ -16,7 +16,7 @@ export const Sidebar = () => {
     ...(username  !== "SYSTEM_ADMIN"
       ? [{ name: "Job Portal", path: "/job-portal" }]
       : []),
-  
+    { name: "Audit Log", path: "/audit-log" },
     { name: "Setting", path: "/setting" },
   ];
   
