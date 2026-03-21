@@ -2,14 +2,14 @@ import React, { useState, useEffect } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, TextField,
   Button, Box, Typography, Select, MenuItem, FormControl,
-  InputLabel, Stepper, Step, StepLabel,
+  InputLabel, Stepper, Step, StepLabel, FormControlLabel, Checkbox,
 } from "@mui/material";
 
 interface CreateOrgDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { org: any; user: any }) => void;
-  initialData?: any; // Added prop
+  onSubmit: (data: { org: any; user: any; sendInviteEmail?: boolean }) => void;
+  initialData?: any;
 }
 
 const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
@@ -28,6 +28,7 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
       created_by: localStorage.getItem("username") || "",
     },
     user: { email: "", username: "", password: "" },
+    sendInviteEmail: true,
   });
 
   // Steps change if editing (usually you don't recreate the admin user on edit)
@@ -49,6 +50,7 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
             created_by: initialData.created_by || "",
           },
           user: { email: "", username: initialData.username || "", password: "" },
+          sendInviteEmail: false,
         });
       } else {
         resetForm();
@@ -82,6 +84,7 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
         created_by: localStorage.getItem("username") || "",
       },
       user: { email: "", username: "", password: "" },
+      sendInviteEmail: true,
     });
   };
 
@@ -166,9 +169,21 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">Review Changes</Typography>
             <Typography variant="body2"><strong>Name:</strong> {formData.org.name}</Typography>
+            <Typography variant="body2"><strong>Display Name:</strong> {formData.org.display_name}</Typography>
             <Typography variant="body2"><strong>Status:</strong> {formData.org.status}</Typography>
             {!initialData && (
-              <Typography variant="body2"><strong>Admin User:</strong> {formData.user.username}</Typography>
+              <>
+                <Typography variant="body2"><strong>Admin User:</strong> {formData.user.username}</Typography>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.sendInviteEmail}
+                      onChange={(e) => setFormData(prev => ({ ...prev, sendInviteEmail: e.target.checked }))}
+                    />
+                  }
+                  label="Send invite email to admin (welcome with login credentials)"
+                />
+              </>
             )}
           </Box>
         )}

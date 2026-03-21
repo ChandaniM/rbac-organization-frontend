@@ -2,6 +2,7 @@ import { Button, Box, Typography, Menu, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import CreateOrgDialog from "../../components/CreateOrgDialog";
 import { createOrg, getAllOrganizations } from "../../services/organization";
+import { sendInviteEmail } from "../../services/notification.service";
 // Note: You should have an updateOrg service. I've added a placeholder comment for it.
 import { useAuth } from "../../store/AuthContext";
 import { DynamicTable, type Column } from "../../components/DynamicTable";
@@ -65,7 +66,7 @@ const SystemOrgAdminView = () => {
     }
   };
 
-  const handleFormSubmit = async (data: { org: any; user: any }) => {
+  const handleFormSubmit = async (data: { org: any; user: any; sendInviteEmail?: boolean }) => {
     try {
       if (editingOrg) {
         // Logic for Update: Call your update API here
@@ -73,6 +74,27 @@ const SystemOrgAdminView = () => {
         // await updateOrg(token, editingOrg.id, data.org); 
       } else {
         await createOrg(token, data);
+        if (data.sendInviteEmail && data.user?.email) {
+          try {
+            const orgName = data.org?.display_name || data.org?.name || "Organization";
+            const signInUrl = `${window.location.origin}/auth/login`;
+            await sendInviteEmail(token, {
+              to: data.user.email,
+              event: "user.invited",
+              data: {
+                orgName,
+                invitedBy: "System Administrator",
+                userEmail: data.user.email,
+                tempPassword: data.user.password,
+                signInUrl,
+              },
+            });
+            alert("Organization created! Invite email sent to admin.");
+          } catch (emailErr: any) {
+            console.error("Invite email failed:", emailErr);
+            alert("Organization created, but invite email failed to send.");
+          }
+        }
       }
       setOpenOrgDialog(false);
       setEditingOrg(null);

@@ -4,7 +4,8 @@ const endpoints = {
     login : '/login',
     organizationwithuser : '/organizationwithuser',
     organizationData:"/getAllOrg",
-    dashboard:"/dashboard"
+    dashboard:"/dashboard",
+    testEmail: '/notifications/test-email',
   };
   
   export default endpoints;

@@ -24,21 +24,23 @@ export const getOrgDetails = async () => {
 };
 
 export const createOrg = async (
-  authToken : any ,
+  authToken: any,
   details: {
-  org: {
-    name: string;
-    display_name?: string;
-    description?: string;
-    status?: string;
-    created_by?: string;
-  };
-  user: {
-    email: string;
-    username: string;
-    password: string;
-  };
-}) => {
+    org: {
+      name: string;
+      display_name?: string;
+      description?: string;
+      status?: string;
+      created_by?: string;
+    };
+    user: {
+      email: string;
+      username: string;
+      password: string;
+    };
+    sendInviteEmail?: boolean;
+  }
+) => {
   try {
     const url = `${BASE_URL}${endpoints.organizationwithuser}`;
     console.log("Create Org URL:", url);
