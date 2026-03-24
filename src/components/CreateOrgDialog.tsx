@@ -27,7 +27,17 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
       status: "active",
       created_by: localStorage.getItem("username") || "",
     },
-    user: { email: "", username: "", password: "" },
+    user: { 
+      email: "", 
+      username: "", 
+      password: "",
+      is_active: true,
+      job_title: "",
+      department: "",
+      location: "",
+      phone: "",
+      business_unit: "",
+    },
     sendInviteEmail: true,
   });
 
@@ -49,7 +59,17 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
             status: initialData.status || "active",
             created_by: initialData.created_by || "",
           },
-          user: { email: "", username: initialData.username || "", password: "" },
+          user: { 
+            email: "", 
+            username: initialData.username || "", 
+            password: "",
+            is_active: true,
+            job_title: "",
+            department: "",
+            location: "",
+            phone: "",
+            business_unit: "",
+          },
           sendInviteEmail: false,
         });
       } else {
@@ -58,10 +78,13 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
     }
   }, [initialData, open]);
 
-  const handleChange = (section: "org" | "user", field: string, value: string) => {
+  const handleChange = (section: "org" | "user", field: string, value: string | boolean) => {
     setFormData((prev) => ({
       ...prev,
-      [section]: { ...prev[section], [field]: value },
+      [section]: { 
+        ...prev[section], 
+        [field]: field === "is_active" ? value === "true" : value 
+      },
     }));
   };
 
@@ -83,7 +106,17 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
         status: "active",
         created_by: localStorage.getItem("username") || "",
       },
-      user: { email: "", username: "", password: "" },
+      user: { 
+        email: "", 
+        username: "", 
+        password: "",
+        is_active: true,
+        job_title: "",
+        department: "",
+        location: "",
+        phone: "",
+        business_unit: "",
+      },
       sendInviteEmail: true,
     });
   };
@@ -103,7 +136,7 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
       </Box>
 
       <DialogContent sx={{ pt: 3 }}>
-        {/* Step: Org Details (Step 0 always) */}
+        {/* Step 0: Organization Details */}
         {activeStep === 0 && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">Organization Info</Typography>
@@ -139,28 +172,81 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
           </Box>
         )}
 
-        {/* Step: User Details (Only if creating) */}
+        {/* Step 1: Admin User Details (Only when creating new org) */}
         {!initialData && activeStep === 1 && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">Admin User Info</Typography>
-            <TextField
-              fullWidth label="Email" type="email"
-              value={formData.user.email}
-              onChange={(e) => handleChange("user", "email", e.target.value)}
-              size="small" required
-            />
-            <TextField
-              fullWidth label="Username"
-              value={formData.user.username}
-              onChange={(e) => handleChange("user", "username", e.target.value)}
-              size="small" required
-            />
+            
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+              <TextField
+                fullWidth label="Email" type="email"
+                value={formData.user.email}
+                onChange={(e) => handleChange("user", "email", e.target.value)}
+                size="small" required
+              />
+              <TextField
+                fullWidth label="Username"
+                value={formData.user.username}
+                onChange={(e) => handleChange("user", "username", e.target.value)}
+                size="small" required
+              />
+            </Box>
+
             <TextField
               fullWidth label="Password" type="password"
               value={formData.user.password}
               onChange={(e) => handleChange("user", "password", e.target.value)}
               size="small" required
             />
+
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1 }}>
+              Additional Information
+            </Typography>
+
+            <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 2 }}>
+              <TextField
+                fullWidth label="Job Title"
+                value={formData.user.job_title}
+                onChange={(e) => handleChange("user", "job_title", e.target.value)}
+                size="small"
+              />
+              <TextField
+                fullWidth label="Department"
+                value={formData.user.department}
+                onChange={(e) => handleChange("user", "department", e.target.value)}
+                size="small"
+              />
+              <TextField
+                fullWidth label="Business Unit"
+                value={formData.user.business_unit}
+                onChange={(e) => handleChange("user", "business_unit", e.target.value)}
+                size="small"
+              />
+              <TextField
+                fullWidth label="Location"
+                value={formData.user.location}
+                onChange={(e) => handleChange("user", "location", e.target.value)}
+                size="small"
+              />
+              <TextField
+                fullWidth label="Phone"
+                value={formData.user.phone}
+                onChange={(e) => handleChange("user", "phone", e.target.value)}
+                size="small"
+                placeholder="+91 90000 00001"
+              />
+              <FormControl fullWidth size="small">
+                <InputLabel>User Status</InputLabel>
+                <Select
+                  value={formData.user.is_active ? "true" : "false"}
+                  onChange={(e) => handleChange("user", "is_active", e.target.value)}
+                  label="User Status"
+                >
+                  <MenuItem value="true">Active</MenuItem>
+                  <MenuItem value="false">Inactive</MenuItem>
+                </Select>
+              </FormControl>
+            </Box>
           </Box>
         )}
 
@@ -168,12 +254,26 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
         {activeStep === steps.length - 1 && (
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <Typography variant="subtitle1" fontWeight="bold">Review Changes</Typography>
-            <Typography variant="body2"><strong>Name:</strong> {formData.org.name}</Typography>
-            <Typography variant="body2"><strong>Display Name:</strong> {formData.org.display_name}</Typography>
-            <Typography variant="body2"><strong>Status:</strong> {formData.org.status}</Typography>
+
+            <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 1 }}>Organization</Typography>
+            <Typography variant="body2"><strong>Name:</strong> {formData.org.name || "—"}</Typography>
+            <Typography variant="body2"><strong>Display Name:</strong> {formData.org.display_name || "—"}</Typography>
+            <Typography variant="body2"><strong>Description:</strong> {formData.org.description || "—"}</Typography>
+            <Typography variant="body2"><strong>Status:</strong> {formData.org.status || "—"}</Typography>
+
             {!initialData && (
               <>
-                <Typography variant="body2"><strong>Admin User:</strong> {formData.user.username}</Typography>
+                <Typography variant="subtitle2" fontWeight="bold" sx={{ mt: 2 }}>Admin User</Typography>
+                <Typography variant="body2"><strong>Email:</strong> {formData.user.email || "—"}</Typography>
+                <Typography variant="body2"><strong>Username:</strong> {formData.user.username || "—"}</Typography>
+                <Typography variant="body2"><strong>Password:</strong> {formData.user.password ? "••••••" : "—"}</Typography>
+                <Typography variant="body2"><strong>Status:</strong> {formData.user.is_active ? "Active" : "Inactive"}</Typography>
+                <Typography variant="body2"><strong>Job Title:</strong> {formData.user.job_title || "—"}</Typography>
+                <Typography variant="body2"><strong>Department:</strong> {formData.user.department || "—"}</Typography>
+                <Typography variant="body2"><strong>Business Unit:</strong> {formData.user.business_unit || "—"}</Typography>
+                <Typography variant="body2"><strong>Location:</strong> {formData.user.location || "—"}</Typography>
+                <Typography variant="body2"><strong>Phone:</strong> {formData.user.phone || "—"}</Typography>
+
                 <FormControlLabel
                   control={
                     <Checkbox
@@ -182,6 +282,7 @@ const CreateOrgDialog: React.FC<CreateOrgDialogProps> = ({
                     />
                   }
                   label="Send invite email to admin (welcome with login credentials)"
+                  sx={{ mt: 1 }}
                 />
               </>
             )}

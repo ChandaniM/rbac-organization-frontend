@@ -1,6 +1,7 @@
 import { Button, Box, Typography, Menu, MenuItem } from "@mui/material";
 import { useEffect, useState } from "react";
 import CreateOrgDialog from "../../components/CreateOrgDialog";
+import ManageOrgEmployeesDialog from "../../components/ManageOrgEmployeesDialog";
 import { createOrg, getAllOrganizations, updateOrganization, deleteOrganization } from "../../services/organization";
 import { sendInviteEmail } from "../../services/notification.service";
 // Note: You should have an updateOrg service. I've added a placeholder comment for it.
@@ -23,6 +24,7 @@ const SystemOrgAdminView = () => {
   const { token } = useAuth();
 
   const [openOrgDialog, setOpenOrgDialog] = useState(false);
+  const [openEmployeesDialog, setOpenEmployeesDialog] = useState(false);
   const [orgTableData, setOrgTableData] = useState<Organization[]>([]);
   const [loading, setLoading] = useState(false);
   const [editingOrg, setEditingOrg] = useState<Organization | null>(null);
@@ -139,6 +141,12 @@ const SystemOrgAdminView = () => {
     }
   };
 
+  const handleManageEmployees = () => {
+    if (!selectedRow) return;
+    setOpenEmployeesDialog(true);
+    handleMenuClose();
+  };
+
   return (
     <Box p={3}>
       <Box display='flex' justifyContent='space-between' alignItems='center' mb={3}>
@@ -176,6 +184,7 @@ const SystemOrgAdminView = () => {
               onRowsPerPageChange={(rows) => setPagination((p) => ({ ...p, pageSize: rows }))}
             />
             <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
+              <MenuItem onClick={handleManageEmployees}>Manage Employees</MenuItem>
               <MenuItem onClick={handleEdit}>Edit</MenuItem>
               <MenuItem onClick={handleDelete} sx={{ color: "error.main" }}>Delete</MenuItem>
             </Menu>
@@ -191,6 +200,18 @@ const SystemOrgAdminView = () => {
           setEditingOrg(null);
         }}
         onSubmit={handleFormSubmit}
+      />
+
+      <ManageOrgEmployeesDialog
+        open={openEmployeesDialog}
+        onClose={() => {
+          setOpenEmployeesDialog(false);
+        }}
+        organization={selectedRow ? {
+          id: selectedRow.id,
+          name: selectedRow.name,
+          display_name: selectedRow.display_name || undefined
+        } : null}
       />
     </Box>
   );

@@ -37,6 +37,12 @@ export const createOrg = async (
       email: string;
       username: string;
       password: string;
+      is_active?: boolean;
+      job_title?: string;
+      department?: string;
+      location?: string;
+      phone?: string;
+      business_unit?: string;
     };
     sendInviteEmail?: boolean;
   }
